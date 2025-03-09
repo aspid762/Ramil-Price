@@ -53,13 +53,20 @@ def sales():
     ).all()
     
     # Преобразуем данные для графика
-    sales_data = [
-        {
-            'date': date.date.strftime(date_format) if hasattr(date.date, 'strftime') else date.date.isoformat(),
-            'total': float(date.total)
-        }
-        for date in sales_by_date
-    ]
+    sales_data = []
+    for date_item in sales_by_date:
+        date_str = ""
+        if hasattr(date_item.date, 'strftime'):
+            date_str = date_item.date.strftime(date_format)
+        elif hasattr(date_item.date, 'isoformat'):
+            date_str = date_item.date.isoformat()
+        else:
+            date_str = str(date_item.date)
+        
+        sales_data.append({
+            'date': date_str,
+            'total': float(date_item.total)
+        })
     
     # Получаем топ-5 самых продаваемых товаров
     top_products = db.session.query(
@@ -226,7 +233,8 @@ def customers():
     top_customers = db.session.query(
         Customer,
         func.sum(Order.total_cost).label('total_spent'),
-        func.count(Order.id).label('orders_count')
+        func.count(Order.id).label('orders_count'),
+        func.avg(Order.total_cost).label('average_order')
     ).join(Order).group_by(Customer.id).order_by(
         desc('total_spent')
     ).limit(10).all()
@@ -245,12 +253,20 @@ def customers():
     ).group_by('month').order_by('month').all()
     
     # Преобразуем результаты в формат для графика
-    new_customers_data = [
-        {
-            'month': datetime.strptime(str(row.month) + '-01', '%Y-%m-%d').strftime('%b %Y') if row.month else 'Неизвестно',
+    formatted_customers_data = []
+    for row in new_customers_data:
+        month_str = 'Неизвестно'
+        if row.month:
+            try:
+                month_date = datetime.strptime(str(row.month) + '-01', '%Y-%m-%d')
+                month_str = month_date.strftime('%b %Y')
+            except ValueError:
+                month_str = str(row.month)
+        
+        formatted_customers_data.append({
+            'month': month_str,
             'count': row.count
-        } for row in new_customers_data
-    ]
+        })
     
     # Получаем заказчиков с повторными заказами
     repeat_customers = db.session.query(
@@ -267,6 +283,6 @@ def customers():
         'analytics/customers.html',
         period=period,
         top_customers=top_customers,
-        new_customers_data=new_customers_data,
+        new_customers_data=formatted_customers_data,
         repeat_customers=repeat_customers
     ) 

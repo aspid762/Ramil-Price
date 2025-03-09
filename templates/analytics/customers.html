@@ -69,8 +69,8 @@
                             <tbody>
                                 {% for customer in top_customers %}
                                 <tr>
-                                    <td>{{ customer.name }}</td>
-                                    <td>{{ customer.total_amount|round(2) }}</td>
+                                    <td>{{ customer.Customer.name }}</td>
+                                    <td>{{ customer.total_spent|round(2) }}</td>
                                     <td>{{ customer.orders_count }}</td>
                                     <td>{{ customer.average_order|round(2) }}</td>
                                 </tr>
@@ -98,13 +98,15 @@
                                 <tr>
                                     <th>Заказчик</th>
                                     <th>Количество заказов</th>
+                                    <th>Средний чек (₽)</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for customer in repeat_customers %}
                                 <tr>
-                                    <td>{{ customer.name }}</td>
+                                    <td>{{ customer.Customer.name }}</td>
                                     <td>{{ customer.orders_count }}</td>
+                                    <td>{{ customer.avg_order_value|round(2) }}</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -124,10 +126,10 @@
 <script>
     // Данные для графика топ заказчиков
     const topCustomersData = {
-        labels: [{% for customer in top_customers[:5] %}'{{ customer.name }}',{% endfor %}],
+        labels: [{% for customer in top_customers[:5] %}'{{ customer.Customer.name }}',{% endfor %}],
         datasets: [{
             label: 'Сумма заказов (₽)',
-            data: [{% for customer in top_customers[:5] %}{{ customer.total_amount }},{% endfor %}],
+            data: [{% for customer in top_customers[:5] %}{{ customer.total_spent }},{% endfor %}],
             backgroundColor: [
                 'rgba(255, 99, 132, 0.5)',
                 'rgba(54, 162, 235, 0.5)',
