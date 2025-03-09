@@ -49,18 +49,28 @@ def create_app(config_class=Config):
     # Проверяем существование базы данных и создаем её при необходимости
     with app.app_context():
         db_path = app.config['SQLALCHEMY_DATABASE_URI'].replace('sqlite:///', '')
-        if not os.path.exists(db_path):
-            print(f"База данных не найдена. Создаем новую базу данных: {db_path}")
-            db.create_all()
-            init_db()  # Заполняем тестовыми данными
+        db_exists = os.path.exists(db_path)
+        
+        # Создаем таблицы, если они не существуют
+        db.create_all()
+        
+        # Проверяем, есть ли данные в таблицах
+        if not db_exists or Product.query.count() == 0:
+            print("База данных пуста. Заполняем тестовыми данными...")
+            init_db()  # Заполняем тестовыми данными только если БД пуста
         else:
-            print(f"База данных найдена: {db_path}")
+            print(f"База данных уже содержит данные. Пропускаем инициализацию.")
     
     return app
 
 def init_db():
     """Инициализирует базу данных тестовыми данными."""
     print("Заполнение базы данных тестовыми данными...")
+    
+    # Проверяем, есть ли уже данные в таблицах
+    if Product.query.count() > 0 or Customer.query.count() > 0:
+        print("В базе данных уже есть записи. Пропускаем инициализацию.")
+        return
     
     # Создаем тестовых заказчиков
     customer1 = Customer(
