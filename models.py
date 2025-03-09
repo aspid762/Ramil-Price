@@ -48,7 +48,7 @@ class Customer(db.Model):
     address = db.Column(db.String(255))
     margin = db.Column(db.Float, default=0)  # Наценка в процентах
     delivery_fee = db.Column(db.Float, default=0)  # Стоимость доставки
-    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)  # Добавляем поле
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)  # Исправляем здесь
     
     orders = db.relationship('Order', backref='customer', lazy=True)
     
