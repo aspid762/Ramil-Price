@@ -6,39 +6,54 @@
 <div class="container-fluid">
     <h1 class="mb-4">Панель управления</h1>
     
-    <!-- Карточки с ключевыми показателями -->
+    <!-- Панель управления с кликабельными плашками -->
     <div class="row mb-4">
-        <div class="col-md-3">
-            <div class="card bg-primary text-white">
-                <div class="card-body">
-                    <h5 class="card-title">Товары в прайс-листе</h5>
-                    <p class="card-text display-4">{{ stats.products_count }}</p>
+        <!-- Товары в прайс-листе -->
+        <div class="col-md-3 mb-3">
+            <a href="{{ url_for('product.index') }}" class="text-decoration-none">
+                <div class="card bg-primary text-white h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Товары в прайс-листе</h5>
+                        <h2 class="display-4">{{ stats.products_count }}</h2>
+                    </div>
                 </div>
-            </div>
+            </a>
         </div>
-        <div class="col-md-3">
-            <div class="card bg-success text-white">
-                <div class="card-body">
-                    <h5 class="card-title">Заказчики</h5>
-                    <p class="card-text display-4">{{ stats.customers_count }}</p>
+        
+        <!-- Заказчики -->
+        <div class="col-md-3 mb-3">
+            <a href="{{ url_for('customer.index') }}" class="text-decoration-none">
+                <div class="card bg-success text-white h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Заказчики</h5>
+                        <h2 class="display-4">{{ stats.customers_count }}</h2>
+                    </div>
                 </div>
-            </div>
+            </a>
         </div>
-        <div class="col-md-3">
-            <div class="card bg-info text-white">
-                <div class="card-body">
-                    <h5 class="card-title">Заказы</h5>
-                    <p class="card-text display-4">{{ stats.orders_count }}</p>
+        
+        <!-- Заказы -->
+        <div class="col-md-3 mb-3">
+            <a href="{{ url_for('order.index') }}" class="text-decoration-none">
+                <div class="card bg-info text-white h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Заказы</h5>
+                        <h2 class="display-4">{{ stats.orders_count }}</h2>
+                    </div>
                 </div>
-            </div>
+            </a>
         </div>
-        <div class="col-md-3">
-            <div class="card bg-warning text-dark">
-                <div class="card-body">
-                    <h5 class="card-title">Стоимость склада</h5>
-                    <p class="card-text display-4">{{ stats.total_stock_value|default(0)|round(2) }} ₽</p>
+        
+        <!-- Стоимость склада -->
+        <div class="col-md-3 mb-3">
+            <a href="{{ url_for('stock.index') }}" class="text-decoration-none">
+                <div class="card bg-warning h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Стоимость склада</h5>
+                        <h2 class="display-4">{{ "%.1f"|format(stats.total_stock_value) }} ₽</h2>
+                    </div>
                 </div>
-            </div>
+            </a>
         </div>
     </div>
     

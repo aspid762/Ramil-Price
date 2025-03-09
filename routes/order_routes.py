@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from models import db, Order, OrderItem, Customer, Product, Stock, Shipment, StockMovement, PriceHistory
 from datetime import datetime, timedelta, timedelta
 from sqlalchemy import or_, and_, desc
+from utils.excel_export import export_order_details_to_excel
 
 order_bp = Blueprint('order', __name__, url_prefix='/orders')
 
@@ -375,24 +376,68 @@ def delete(id):
 @order_bp.route('/export')
 def export():
     """Экспорт списка заказов в Excel"""
-    orders = Order.query.order_by(Order.created_at.desc()).all()
-    output = export_orders_to_excel(orders)
+    # Проверяем, указан ли ID заказа
+    order_id = request.args.get('id')
+    
+    if order_id and order_id.isdigit():
+        # Если указан ID заказа, экспортируем детали этого заказа
+        order = Order.query.get_or_404(int(order_id))
+        output = export_order_details_to_excel(order)
+        
+        return send_file(
+            output,
+            as_attachment=True,
+            download_name=f"order_{order.id}_{datetime.now().strftime('%Y%m%d')}.xlsx",
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+    
+    # Иначе экспортируем список всех заказов
+    # Получаем параметры фильтрации
+    status = request.args.get('status', '')
+    customer_id = request.args.get('customer_id', '')
+    
+    # Базовый запрос
+    query = Order.query
+    
+    # Фильтрация по статусу
+    if status:
+        query = query.filter(Order.status == status)
+    
+    # Фильтрация по заказчику
+    if customer_id and customer_id.isdigit():
+        query = query.filter(Order.customer_id == int(customer_id))
+    
+    # Получаем заказы, отсортированные по статусу и дате создания
+    orders = query.order_by(Order.status, Order.created_at.desc()).all()
+    
+    # Создаем Excel-отчет
+    from utils.excel_export import create_excel_report
+    
+    headers = ['ID', 'Заказчик', 'Дата создания', 'Статус', 'Ожидаемая отгрузка', 'Сумма (₽)', 'Примечания']
+    
+    data = [
+        [
+            order.id,
+            order.customer.name if order.customer else '',
+            order.created_at.strftime('%d.%m.%Y'),
+            order.status,
+            order.expected_shipping.strftime('%d.%m.%Y') if order.expected_shipping else '',
+            order.total_cost,
+            order.notes or ''
+        ]
+        for order in orders
+    ]
+    
+    output = create_excel_report(
+        title="Список заказов",
+        headers=headers,
+        data=data
+    )
+    
     return send_file(
         output,
         as_attachment=True,
         download_name=f"orders_{datetime.now().strftime('%Y%m%d')}.xlsx",
-        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    )
-
-@order_bp.route('/export/<int:id>')
-def export_order(id):
-    """Экспорт деталей заказа в Excel"""
-    order = Order.query.get_or_404(id)
-    output = export_order_details_to_excel(order)
-    return send_file(
-        output,
-        as_attachment=True,
-        download_name=f"order_{order.id}_{datetime.now().strftime('%Y%m%d')}.xlsx",
         mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     )
 

@@ -36,11 +36,11 @@
     <table class="table table-striped table-hover">
         <thead>
             <tr>
-                <th>Название</th>
+                <th>Наименование</th>
                 <th>Телефон</th>
                 <th>Адрес</th>
-                <th>Наценка, %</th>
-                <th>Доставка, руб.</th>
+                <th>Наценка</th>
+                <th>Доставка</th>
                 <th>Действия</th>
             </tr>
         </thead>
@@ -48,10 +48,37 @@
             {% for customer in customers %}
             <tr>
                 <td>{{ customer.name }}</td>
-                <td>{{ customer.phone }}</td>
-                <td>{{ customer.address }}</td>
-                <td>{{ customer.margin|round(2) }}</td>
-                <td>{{ customer.delivery_fee|round(2) }}</td>
+                <td>
+                    {{ customer.phone }}
+                    {% if customer.phone %}
+                    <button class="btn btn-sm btn-outline-secondary" 
+                            onclick="copyToClipboard('{{ customer.phone }}', this)" 
+                            title="Копировать телефон">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                    <a href="tel:{{ customer.phone }}" class="btn btn-sm btn-outline-primary" title="Позвонить">
+                        <i class="fas fa-phone"></i>
+                    </a>
+                    {% endif %}
+                </td>
+                <td>
+                    {{ customer.address }}
+                    {% if customer.address %}
+                    <button class="btn btn-sm btn-outline-secondary" 
+                            onclick="copyToClipboard('{{ customer.address }}', this)" 
+                            title="Копировать адрес">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                    <a href="https://maps.google.com/maps?q={{ customer.address|urlencode }}" 
+                       class="btn btn-sm btn-outline-primary" 
+                       target="_blank" 
+                       title="Открыть в Google Maps">
+                        <i class="fas fa-map-marker-alt"></i>
+                    </a>
+                    {% endif %}
+                </td>
+                <td>{{ customer.margin|default(0)|round(2) }}%</td>
+                <td>{{ customer.delivery_fee|default(0)|round(2) }} ₽</td>
                 <td>
                     <div class="btn-group">
                         <a href="{{ url_for('customer.view', id=customer.id) }}" class="btn btn-sm btn-outline-primary btn-action" title="Просмотр">

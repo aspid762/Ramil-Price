@@ -21,10 +21,57 @@
 <div class="row">
     <div class="col-md-4">
         <div class="card mb-4">
-            <div class="card-header bg-info text-white">
-                <h5 class="mb-0">Информация о заказе</h5>
+            <div class="card-header">
+                <h5 class="card-title">Информация о заказе</h5>
             </div>
             <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-3 fw-bold">Заказчик:</div>
+                    <div class="col-md-9">
+                        {% if order.customer %}
+                        <a href="{{ url_for('customer.view', id=order.customer.id) }}">{{ order.customer.name }}</a>
+                        {% else %}
+                        Не указан
+                        {% endif %}
+                    </div>
+                </div>
+                {% if order.customer %}
+                <div class="row mb-3">
+                    <div class="col-md-3 fw-bold">Телефон:</div>
+                    <div class="col-md-9 d-flex align-items-center">
+                        {{ order.customer.phone }}
+                        {% if order.customer.phone %}
+                        <button class="btn btn-sm btn-outline-secondary ms-2" 
+                                onclick="copyToClipboard('{{ order.customer.phone }}', this)" 
+                                title="Копировать телефон">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                        <a href="tel:{{ order.customer.phone }}" class="btn btn-sm btn-outline-primary ms-1" title="Позвонить">
+                            <i class="fas fa-phone"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-3 fw-bold">Адрес:</div>
+                    <div class="col-md-9 d-flex align-items-center">
+                        {{ order.customer.address }}
+                        {% if order.customer.address %}
+                        <button class="btn btn-sm btn-outline-secondary ms-2" 
+                                onclick="copyToClipboard('{{ order.customer.address }}', this)" 
+                                title="Копировать адрес">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                        <a href="https://maps.google.com/maps?q={{ order.customer.address|urlencode }}" 
+                           class="btn btn-sm btn-outline-primary ms-1" 
+                           target="_blank" 
+                           title="Открыть в Google Maps">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
                 <p><strong>Номер заказа:</strong> {{ order.id }}</p>
                 <p><strong>Дата создания:</strong> {{ order.created_at.strftime('%d.%m.%Y %H:%M') }}</p>
                 <p>

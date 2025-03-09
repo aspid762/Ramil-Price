@@ -110,7 +110,7 @@ def export_orders_to_excel(orders):
     data = [
         [
             order.id,
-            order.customer.name,
+            order.customer.name if order.customer else '',
             order.created_at.strftime('%d.%m.%Y'),
             order.status,
             order.expected_shipping.strftime('%d.%m.%Y') if order.expected_shipping else '',
@@ -166,12 +166,16 @@ def export_order_details_to_excel(order):
     ws['A1'].alignment = Alignment(horizontal='center')
     
     # Информация о заказчике
-    ws['A3'] = "Заказчик:"
-    ws['B3'] = order.customer.name
-    ws['A4'] = "Телефон:"
-    ws['B4'] = order.customer.phone
-    ws['A5'] = "Адрес:"
-    ws['B5'] = order.customer.address
+    if order.customer:
+        ws['A3'] = "Заказчик:"
+        ws['B3'] = order.customer.name
+        ws['A4'] = "Телефон:"
+        ws['B4'] = order.customer.phone or ''
+        ws['A5'] = "Адрес:"
+        ws['B5'] = order.customer.address or ''
+    else:
+        ws['A3'] = "Заказчик:"
+        ws['B3'] = "Не указан"
     
     # Информация о заказе
     ws['D3'] = "Статус:"
@@ -211,7 +215,7 @@ def export_order_details_to_excel(order):
         ws.cell(row=row_idx, column=6, value=item.quantity * item.selling_price)
     
     # Итоговая сумма
-    total_row = 7 + len(order.items) + 2
+    total_row = 7 + len(list(order.items)) + 2
     ws.merge_cells(f'A{total_row}:E{total_row}')
     ws.cell(row=total_row, column=1, value="ИТОГО:")
     ws.cell(row=total_row, column=1).alignment = Alignment(horizontal='right')
@@ -220,7 +224,7 @@ def export_order_details_to_excel(order):
     ws.cell(row=total_row, column=6).font = Font(bold=True)
     
     # Доставка
-    if order.customer.delivery_fee > 0:
+    if order.customer and order.customer.delivery_fee > 0:
         delivery_row = total_row - 1
         ws.merge_cells(f'A{delivery_row}:E{delivery_row}')
         ws.cell(row=delivery_row, column=1, value="Доставка:")

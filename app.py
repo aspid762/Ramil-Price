@@ -6,11 +6,15 @@ from config import Config
 from models import db, Product, PriceHistory, Customer, Order, OrderItem, Stock, StockMovement
 from flask_wtf.csrf import CSRFProtect
 from flask_migrate import Migrate
+from urllib.parse import quote
 
 def create_app(config_class=Config):
     """Создает экземпляр приложения Flask с указанной конфигурацией."""
     app = Flask(__name__)
     app.config.from_object(config_class)
+    
+    # Добавляем фильтр urlencode для шаблонов
+    app.jinja_env.filters['urlencode'] = lambda u: quote(u)
     
     # Инициализация расширений
     db.init_app(app)

@@ -161,6 +161,42 @@ function initImagePreview() {
     });
 }
 
+/**
+ * Копирует текст в буфер обмена
+ * @param {string} text - Текст для копирования
+ * @param {HTMLElement} button - Кнопка, которая была нажата
+ */
+function copyToClipboard(text, button) {
+    // Создаем временный элемент для копирования
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    document.body.appendChild(textarea);
+    textarea.select();
+    
+    try {
+        // Копируем текст в буфер обмена
+        document.execCommand('copy');
+        
+        // Меняем иконку на галочку на короткое время
+        const originalHTML = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-check"></i>';
+        button.classList.add('btn-success');
+        button.classList.remove('btn-outline-secondary');
+        
+        // Возвращаем оригинальную иконку через 1.5 секунды
+        setTimeout(() => {
+            button.innerHTML = originalHTML;
+            button.classList.remove('btn-success');
+            button.classList.add('btn-outline-secondary');
+        }, 1500);
+    } catch (err) {
+        console.error('Не удалось скопировать текст: ', err);
+    }
+    
+    // Удаляем временный элемент
+    document.body.removeChild(textarea);
+}
+
 // Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', function() {
     initTooltips();
