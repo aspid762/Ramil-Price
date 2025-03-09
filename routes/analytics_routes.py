@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request
 from models import db, Order, OrderItem, Product, Customer
 from sqlalchemy import func, extract, desc
-import datetime
+from datetime import datetime, timedelta, timedelta
 
 analytics_bp = Blueprint('analytics', __name__, url_prefix='/analytics')
 
@@ -17,25 +17,25 @@ def sales():
     period = request.args.get('period', 'month')
     
     # Определяем начальную дату в зависимости от периода
-    today = datetime.datetime.now()
+    today = datetime.now()
     if period == 'week':
-        start_date = today - datetime.timedelta(days=7)
+        start_date = today - timedelta(days=7)
         group_by = func.date(Order.created_at)
         date_format = '%d.%m.%Y'
     elif period == 'month':
-        start_date = today - datetime.timedelta(days=30)
+        start_date = today - timedelta(days=30)
         group_by = func.date(Order.created_at)
         date_format = '%d.%m.%Y'
     elif period == 'quarter':
-        start_date = today - datetime.timedelta(days=90)
+        start_date = today - timedelta(days=90)
         group_by = func.date_trunc('week', Order.created_at)
         date_format = '%d.%m.%Y'
     elif period == 'year':
-        start_date = today - datetime.timedelta(days=365)
+        start_date = today - timedelta(days=365)
         group_by = func.date_trunc('month', Order.created_at)
         date_format = '%m.%Y'
     else:
-        start_date = today - datetime.timedelta(days=30)
+        start_date = today - timedelta(days=30)
         group_by = func.date(Order.created_at)
         date_format = '%d.%m.%Y'
     
@@ -126,17 +126,17 @@ def products():
     period = request.args.get('period', 'month')
     
     # Определяем начальную дату в зависимости от периода
-    today = datetime.datetime.now()
+    today = datetime.now()
     if period == 'week':
-        start_date = today - datetime.timedelta(days=7)
+        start_date = today - timedelta(days=7)
     elif period == 'month':
-        start_date = today - datetime.timedelta(days=30)
+        start_date = today - timedelta(days=30)
     elif period == 'quarter':
-        start_date = today - datetime.timedelta(days=90)
+        start_date = today - timedelta(days=90)
     elif period == 'year':
-        start_date = today - datetime.timedelta(days=365)
+        start_date = today - timedelta(days=365)
     else:
-        start_date = today - datetime.timedelta(days=30)
+        start_date = today - timedelta(days=30)
     
     # Получаем данные о продажах по категориям товаров
     sales_by_category = db.session.query(

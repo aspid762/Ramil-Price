@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, send_file
 from models import db, Stock, StockMovement, Order, OrderItem, Product, PriceHistory
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timedelta
 from sqlalchemy import func
 import calendar
 from utils.excel_export import export_stock_movements_to_excel, create_excel_report

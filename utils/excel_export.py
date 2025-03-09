@@ -2,7 +2,7 @@ import openpyxl
 from openpyxl.styles import Font, Alignment, PatternFill
 from openpyxl.utils import get_column_letter
 from io import BytesIO
-from datetime import datetime
+from datetime import datetime, timedelta, timedelta
 
 def create_excel_report(title, headers, data, filename=None):
     """

@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, send_file
 from models import db, Customer, Order
 from sqlalchemy import or_
-from datetime import datetime
+from datetime import datetime, timedelta, timedelta
 
 customer_bp = Blueprint('customer', __name__, url_prefix='/customers')
 

@@ -1,5 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
+from datetime import datetime, timedelta, timedelta
 
 db = SQLAlchemy()
 
@@ -48,7 +48,6 @@ class Customer(db.Model):
     address = db.Column(db.String(255))
     margin = db.Column(db.Float, default=0)  # Наценка в процентах
     delivery_fee = db.Column(db.Float, default=0)  # Стоимость доставки
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)  # Исправляем здесь
     
     orders = db.relationship('Order', back_populates='customer', lazy=True)
     

@@ -1,6 +1,6 @@
 import openpyxl
 from models import db, Product, Customer, Stock
-from datetime import datetime
+from datetime import datetime, timedelta, timedelta
 from sqlalchemy.exc import SQLAlchemyError
 import logging
 

@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, send_file
-from models import db, Stock, StockMovement
-from datetime import datetime
+from models import db, Stock, StockMovement, Product
+from datetime import datetime, timedelta, timedelta
 from sqlalchemy import or_
 
 stock_bp = Blueprint('stock', __name__, url_prefix='/stock')

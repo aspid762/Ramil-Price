@@ -1,5 +1,5 @@
 from flask import Flask, render_template
-import datetime
+from datetime import datetime, timedelta, timedelta, timedelta, timedelta
 import platform
 import os
 from config import Config
@@ -41,7 +41,7 @@ def create_app(config_class=Config):
         """Проверка работоспособности приложения."""
         return {
             'status': 'ok',
-            'timestamp': datetime.datetime.now().isoformat(),
+            'timestamp': datetime.now().isoformat(),
             'python_version': platform.python_version(),
             'platform': platform.platform()
         }
@@ -132,7 +132,7 @@ def init_db():
             quantity=1000.0,
             reserved_quantity=0.0,
             purchase_price=60000.0,
-            received_at=datetime.datetime.now() - datetime.timedelta(days=10)
+            received_at=datetime.now() - timedelta(days=10)
         ),
         Stock(
             category='Трубы',
@@ -141,7 +141,7 @@ def init_db():
             quantity=500.0,
             reserved_quantity=0.0,
             purchase_price=65000.0,
-            received_at=datetime.datetime.now() - datetime.timedelta(days=7)
+            received_at=datetime.now() - timedelta(days=7)
         ),
         Stock(
             category='Листы',
@@ -150,7 +150,7 @@ def init_db():
             quantity=300.0,
             reserved_quantity=0.0,
             purchase_price=55000.0,
-            received_at=datetime.datetime.now() - datetime.timedelta(days=5)
+            received_at=datetime.now() - timedelta(days=5)
         )
     ]
     
@@ -165,7 +165,7 @@ def init_db():
         operation_type='поступление',
         quantity=1000.0,
         purchase_price=60000.0,
-        created_at=datetime.datetime.now() - datetime.timedelta(days=5)
+        created_at=datetime.now() - timedelta(days=5)
     )
     
     stock_movement2 = StockMovement(
@@ -173,7 +173,7 @@ def init_db():
         operation_type='поступление',
         quantity=500.0,
         purchase_price=70000.0,
-        created_at=datetime.datetime.now() - datetime.timedelta(days=3)
+        created_at=datetime.now() - timedelta(days=3)
     )
     
     db.session.add(stock_movement1)
@@ -185,15 +185,15 @@ def init_db():
     order1 = Order(
         customer_id=customer1.id,
         status='новый',
-        created_at=datetime.datetime.now() - datetime.timedelta(days=2),
-        expected_shipping=datetime.datetime.now() + datetime.timedelta(days=3)
+        created_at=datetime.now() - timedelta(days=2),
+        expected_shipping=datetime.now() + timedelta(days=3)
     )
     
     order2 = Order(
         customer_id=customer2.id,
         status='в обработке',
-        created_at=datetime.datetime.now() - datetime.timedelta(days=1),
-        expected_shipping=datetime.datetime.now() + datetime.timedelta(days=2)
+        created_at=datetime.now() - timedelta(days=1),
+        expected_shipping=datetime.now() + timedelta(days=2)
     )
     
     db.session.add(order1)

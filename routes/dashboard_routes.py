@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template
 from models import db, Product, Customer, Order, Stock, StockMovement
 from sqlalchemy import func
-import datetime
+from datetime import datetime, timedelta, timedelta
 
 dashboard_bp = Blueprint('dashboard', __name__)
 
@@ -36,15 +36,15 @@ def index():
     low_stock_items = Stock.query.filter(Stock.quantity - Stock.reserved_quantity < 10).limit(5).all()
     
     # Получаем данные для графика продаж по месяцам
-    current_year = datetime.datetime.now().year
+    current_year = datetime.now().year
     sales_by_month = []
     
     for month in range(1, 13):
-        start_date = datetime.datetime(current_year, month, 1)
+        start_date = datetime(current_year, month, 1)
         if month == 12:
-            end_date = datetime.datetime(current_year + 1, 1, 1)
+            end_date = datetime(current_year + 1, 1, 1)
         else:
-            end_date = datetime.datetime(current_year, month + 1, 1)
+            end_date = datetime(current_year, month + 1, 1)
         
         # Сумма продаж за месяц
         monthly_sales = db.session.query(func.sum(Order.total_cost))\

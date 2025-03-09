@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, send_file
 from models import db, Product, PriceHistory
-from datetime import datetime
+from datetime import datetime, timedelta, timedelta
 from sqlalchemy import or_
 from utils.excel_export import export_products_to_excel
 

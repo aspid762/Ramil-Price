@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, send_file
 from models import db, Order, OrderItem, Customer, Product, Stock, Shipment, StockMovement, PriceHistory
-from datetime import datetime
-from sqlalchemy import or_, and_
+from datetime import datetime, timedelta, timedelta
+from sqlalchemy import or_, and_, desc
 
 order_bp = Blueprint('order', __name__, url_prefix='/orders')
 
