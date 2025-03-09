@@ -220,72 +220,47 @@ def products():
 @analytics_bp.route('/customers')
 def customers():
     """Аналитика по заказчикам"""
-    # Получаем период для анализа
     period = request.args.get('period', 'month')
     
-    # Определяем начальную дату в зависимости от периода
-    today = datetime.datetime.now()
-    if period == 'week':
-        start_date = today - datetime.timedelta(days=7)
-    elif period == 'month':
-        start_date = today - datetime.timedelta(days=30)
-    elif period == 'quarter':
-        start_date = today - datetime.timedelta(days=90)
-    elif period == 'year':
-        start_date = today - datetime.timedelta(days=365)
-    else:
-        start_date = today - datetime.timedelta(days=30)
-    
-    # Получаем топ-10 заказчиков по сумме заказов
+    # Получаем топ заказчиков по сумме заказов
     top_customers = db.session.query(
-        Customer.name,
-        func.sum(Order.total_cost).label('total_amount'),
-        func.count(Order.id).label('orders_count'),
-        func.avg(Order.total_cost).label('average_order')
-    ).join(
-        Order, Customer.id == Order.customer_id
-    ).filter(
-        Order.created_at >= start_date,
-        Order.status != 'отменен'
-    ).group_by(
-        Customer.id
-    ).order_by(
-        desc('total_amount')
+        Customer,
+        func.sum(Order.total_cost).label('total_spent'),
+        func.count(Order.id).label('orders_count')
+    ).join(Order).group_by(Customer.id).order_by(
+        desc('total_spent')
     ).limit(10).all()
     
     # Получаем данные о новых заказчиках по месяцам
-    new_customers_by_month = db.session.query(
-        func.date_trunc('month', Customer.created_at).label('month'),
-        func.count(Customer.id).label('count')
-    ).filter(
-        Customer.created_at >= start_date
-    ).group_by(
-        'month'
-    ).order_by(
-        'month'
-    ).all()
+    # Здесь ошибка - у модели Customer нет поля created_at
+    # Заменим на запрос, использующий дату первого заказа
     
-    # Преобразуем данные для графика
+    # Подзапрос для получения даты первого заказа каждого заказчика
+    first_orders = db.session.query(
+        Order.customer_id,
+        func.min(Order.created_at).label('first_order_date')
+    ).group_by(Order.customer_id).subquery()
+    
+    # Получаем количество новых заказчиков по месяцам
+    new_customers_data = db.session.query(
+        func.date_format(first_orders.c.first_order_date, '%Y-%m-01').label('month'),
+        func.count().label('count')
+    ).group_by('month').order_by('month').all()
+    
+    # Преобразуем результаты в формат для графика
     new_customers_data = [
         {
-            'month': month.month.strftime('%m.%Y'),
-            'count': int(month.count)
-        }
-        for month in new_customers_by_month
+            'month': datetime.strptime(str(row.month), '%Y-%m-%d').strftime('%b %Y') if row.month else 'Неизвестно',
+            'count': row.count
+        } for row in new_customers_data
     ]
     
-    # Получаем данные о повторных заказах
+    # Получаем заказчиков с повторными заказами
     repeat_customers = db.session.query(
-        Customer.name,
-        func.count(Order.id).label('orders_count')
-    ).join(
-        Order, Customer.id == Order.customer_id
-    ).filter(
-        Order.created_at >= start_date,
-        Order.status != 'отменен'
-    ).group_by(
-        Customer.id
-    ).having(
+        Customer,
+        func.count(Order.id).label('orders_count'),
+        func.avg(Order.total_cost).label('avg_order_value')
+    ).join(Order).group_by(Customer.id).having(
         func.count(Order.id) > 1
     ).order_by(
         desc('orders_count')

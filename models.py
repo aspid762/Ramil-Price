@@ -44,13 +44,13 @@ class Customer(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
-    phone = db.Column(db.String(20), nullable=False)
-    address = db.Column(db.String(200), nullable=False)
-    margin = db.Column(db.Float, default=0)
-    delivery_fee = db.Column(db.Float, default=0)
+    phone = db.Column(db.String(20))
+    address = db.Column(db.String(255))
+    margin = db.Column(db.Float, default=0)  # Наценка в процентах
+    delivery_fee = db.Column(db.Float, default=0)  # Стоимость доставки
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)  # Добавляем поле
     
-    # Отношения
-    orders = db.relationship('Order', back_populates='customer', lazy='dynamic')
+    orders = db.relationship('Order', backref='customer', lazy=True)
     
     def __repr__(self):
         return f'<Customer {self.name}>'
