@@ -231,10 +231,6 @@ def customers():
         desc('total_spent')
     ).limit(10).all()
     
-    # Получаем данные о новых заказчиках по месяцам
-    # Здесь ошибка - у модели Customer нет поля created_at
-    # Заменим на запрос, использующий дату первого заказа
-    
     # Подзапрос для получения даты первого заказа каждого заказчика
     first_orders = db.session.query(
         Order.customer_id,
@@ -242,15 +238,16 @@ def customers():
     ).group_by(Order.customer_id).subquery()
     
     # Получаем количество новых заказчиков по месяцам
+    # Используем функции SQLite для форматирования даты
     new_customers_data = db.session.query(
-        func.date_format(first_orders.c.first_order_date, '%Y-%m-01').label('month'),
+        func.strftime('%Y-%m', first_orders.c.first_order_date).label('month'),
         func.count().label('count')
     ).group_by('month').order_by('month').all()
     
     # Преобразуем результаты в формат для графика
     new_customers_data = [
         {
-            'month': datetime.strptime(str(row.month), '%Y-%m-%d').strftime('%b %Y') if row.month else 'Неизвестно',
+            'month': datetime.strptime(str(row.month) + '-01', '%Y-%m-%d').strftime('%b %Y') if row.month else 'Неизвестно',
             'count': row.count
         } for row in new_customers_data
     ]
