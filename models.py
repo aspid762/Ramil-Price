@@ -50,7 +50,7 @@ class Customer(db.Model):
     delivery_fee = db.Column(db.Float, default=0)  # Стоимость доставки
     created_at = db.Column(db.DateTime, default=datetime.utcnow)  # Исправляем здесь
     
-    orders = db.relationship('Order', backref='customer', lazy=True)
+    orders = db.relationship('Order', back_populates='customer', lazy=True)
     
     def __repr__(self):
         return f'<Customer {self.name}>'
@@ -68,8 +68,8 @@ class Order(db.Model):
     notes = db.Column(db.Text, nullable=True)  # Добавляем поле для примечаний
     
     # Отношения
-    customer = db.relationship('Customer', back_populates='orders')
     items = db.relationship('OrderItem', backref='order', lazy='dynamic', cascade='all, delete-orphan')
+    customer = db.relationship('Customer', back_populates='orders')
     
     @property
     def items_total(self):
