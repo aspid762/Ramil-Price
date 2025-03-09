@@ -1,7 +1,8 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, send_file
-from models import db, Stock, StockMovement, Product
+from models import db, Stock, StockMovement, Product, Dictionary
 from datetime import datetime, timedelta, timedelta
 from sqlalchemy import or_
+from utils.dictionary_helpers import get_dictionary_values
 
 stock_bp = Blueprint('stock', __name__, url_prefix='/stock')
 
@@ -64,11 +65,21 @@ def create():
         flash('Партия успешно добавлена на склад', 'success')
         return redirect(url_for('stock.index'))
     
-    return render_template('stock/create.html', categories=Config.PRODUCT_CATEGORIES)
+    # Получаем категории из справочника
+    categories = Dictionary.query.filter_by(type='product_categories', is_active=True).order_by(Dictionary.sort_order, Dictionary.name).all()
+    categories = [category.name for category in categories]
+    
+    # Если категорий нет в справочнике, используем значения по умолчанию
+    if not categories:
+        categories = Config.PRODUCT_CATEGORIES
+    
+    return render_template('stock/create.html', categories=categories)
 
 @stock_bp.route('/edit/<int:id>', methods=['GET', 'POST'])
 def edit(id):
-    """Редактирование позиции на складе"""
+    """Редактирование товара на складе"""
+    from models import Dictionary
+    
     stock = Stock.query.get_or_404(id)
     
     if request.method == 'POST':
@@ -114,7 +125,16 @@ def edit(id):
         flash('Позиция на складе успешно обновлена', 'success')
         return redirect(url_for('stock.index'))
     
-    return render_template('stock/edit.html', stock=stock)
+    # Получаем категории из справочника
+    categories = Dictionary.query.filter_by(type='product_categories', is_active=True).order_by(Dictionary.sort_order, Dictionary.name).all()
+    categories = [category.name for category in categories]
+    
+    # Если категорий нет в справочнике, используем значения по умолчанию
+    if not categories:
+        from config import Config
+        categories = Config.PRODUCT_CATEGORIES
+    
+    return render_template('stock/edit.html', stock=stock, categories=categories)
 
 @stock_bp.route('/delete/<int:id>', methods=['POST'])
 def delete(id):
@@ -243,4 +263,100 @@ def import_stock():
         return redirect(url_for('stock.index'))
     
     # Отображаем форму для загрузки файла
-    return render_template('stock/import.html') 
+    return render_template('stock/import.html')
+
+@stock_bp.route('/add', methods=['GET', 'POST'])
+def add():
+    """Добавление товара на склад"""
+    from models import Dictionary
+    
+    if request.method == 'POST':
+        category = request.form.get('category')
+        name = request.form.get('name')
+        characteristics = request.form.get('characteristics')
+        quantity = float(request.form.get('quantity'))
+        purchase_price = float(request.form.get('purchase_price'))
+        
+        # Создаем новую партию на складе
+        stock = Stock(
+            category=category,
+            name=name,
+            characteristics=characteristics,
+            quantity=quantity,
+            purchase_price=purchase_price,
+            received_at=datetime.utcnow()
+        )
+        
+        db.session.add(stock)
+        db.session.commit()
+        
+        # Добавляем запись о движении товара (поступление)
+        movement = StockMovement(
+            stock_id=stock.id,
+            operation_type='поступление',
+            quantity=quantity,
+            purchase_price=purchase_price,
+            created_at=datetime.utcnow()
+        )
+        
+        db.session.add(movement)
+        db.session.commit()
+        
+        flash('Товар успешно добавлен на склад', 'success')
+        return redirect(url_for('stock.index'))
+    
+    # Получаем категории из справочника
+    categories = Dictionary.query.filter_by(type='product_categories', is_active=True).order_by(Dictionary.sort_order, Dictionary.name).all()
+    categories = [category.name for category in categories]
+    
+    # Если категорий нет в справочнике, используем значения по умолчанию
+    if not categories:
+        from config import Config
+        categories = Config.PRODUCT_CATEGORIES
+    
+    return render_template('stock/add.html', categories=categories)
+
+@stock_bp.route('/movement/add', methods=['GET', 'POST'])
+def add_movement():
+    """Добавление движения товара на складе"""
+    stocks = Stock.query.order_by(Stock.category, Stock.name).all()
+    
+    if request.method == 'POST':
+        stock_id = request.form.get('stock_id')
+        operation_type = request.form.get('operation_type')
+        quantity = float(request.form.get('quantity'))
+        purchase_price = float(request.form.get('purchase_price'))
+        
+        # Получаем товар на складе
+        stock = Stock.query.get_or_404(stock_id)
+        
+        # Проверяем, что количество корректно
+        if operation_type in ['отгрузка', 'списание'] and quantity > stock.available_quantity:
+            flash(f'Недостаточно товара на складе. Доступно: {stock.available_quantity}', 'danger')
+            return redirect(url_for('stock.add_movement'))
+        
+        # Обновляем количество товара на складе
+        if operation_type == 'поступление':
+            stock.quantity += quantity
+        elif operation_type in ['отгрузка', 'списание']:
+            stock.quantity -= quantity
+        
+        # Добавляем запись о движении товара
+        movement = StockMovement(
+            stock_id=stock_id,
+            operation_type=operation_type,
+            quantity=quantity,
+            purchase_price=purchase_price,
+            created_at=datetime.utcnow()
+        )
+        
+        db.session.add(movement)
+        db.session.commit()
+        
+        flash('Движение товара успешно добавлено', 'success')
+        return redirect(url_for('stock.view', id=stock_id))
+    
+    # Получаем типы операций из справочника
+    operation_types = get_dictionary_values('stock_operation_types', ['поступление', 'отгрузка', 'списание'])
+    
+    return render_template('stock/add_movement.html', stocks=stocks, operation_types=operation_types) 

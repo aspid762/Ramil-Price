@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, timedelta, timedelta, timedelta
 import platform
 import os
 from config import Config
-from models import db, Product, PriceHistory, Customer, Order, OrderItem, Stock, StockMovement
+from models import db, Product, PriceHistory, Customer, Order, OrderItem, Stock, StockMovement, Dictionary
 from flask_wtf.csrf import CSRFProtect
 from flask_migrate import Migrate
 from urllib.parse import quote
@@ -30,6 +30,7 @@ def create_app(config_class=Config):
     from routes.dashboard_routes import dashboard_bp
     from routes.search_routes import search_bp
     from routes.analytics_routes import analytics_bp
+    from routes.dictionary_routes import dictionary_bp
     
     app.register_blueprint(product_bp)
     app.register_blueprint(customer_bp)
@@ -39,6 +40,7 @@ def create_app(config_class=Config):
     app.register_blueprint(dashboard_bp, url_prefix='')  # Регистрируем дашборд как корневой маршрут
     app.register_blueprint(search_bp, url_prefix='/search')
     app.register_blueprint(analytics_bp)
+    app.register_blueprint(dictionary_bp)
     
     @app.route('/health')
     def health_check():
@@ -75,6 +77,9 @@ def init_db():
     if Product.query.count() > 0 or Customer.query.count() > 0:
         print("В базе данных уже есть записи. Пропускаем инициализацию.")
         return
+    
+    # Инициализируем справочники
+    init_dictionaries()
     
     # Создаем тестовых заказчиков
     customer1 = Customer(
@@ -237,6 +242,76 @@ def init_db():
     db.session.commit()
     
     print("База данных успешно заполнена тестовыми данными.")
+
+def init_dictionaries():
+    """Инициализирует справочники в базе данных"""
+    # Проверяем, есть ли уже данные в справочниках
+    if Dictionary.query.count() > 0:
+        print("Справочники уже содержат данные. Пропускаем инициализацию.")
+        return
+    
+    # Категории товаров
+    product_categories = [
+        {'code': 'pipes', 'name': 'Трубы', 'sort_order': 1},
+        {'code': 'sheets', 'name': 'Листы', 'sort_order': 2},
+        {'code': 'rebar', 'name': 'Арматура', 'sort_order': 3},
+        {'code': 'other', 'name': 'Прочее', 'sort_order': 4}
+    ]
+    
+    # Статусы заказов
+    order_statuses = [
+        {'code': 'new', 'name': 'новый', 'sort_order': 1},
+        {'code': 'processing', 'name': 'в обработке', 'sort_order': 2},
+        {'code': 'confirmed', 'name': 'подтвержден', 'sort_order': 3},
+        {'code': 'shipped', 'name': 'отгружен', 'sort_order': 4},
+        {'code': 'canceled', 'name': 'отменен', 'sort_order': 5}
+    ]
+    
+    # Типы операций со складом
+    stock_operation_types = [
+        {'code': 'receipt', 'name': 'поступление', 'sort_order': 1},
+        {'code': 'shipment', 'name': 'отгрузка', 'sort_order': 2},
+        {'code': 'writeoff', 'name': 'списание', 'sort_order': 3},
+        {'code': 'inventory', 'name': 'инвентаризация', 'sort_order': 4},
+        {'code': 'reservation', 'name': 'резервирование', 'sort_order': 5},
+        {'code': 'cancel_reservation', 'name': 'отмена резервирования', 'sort_order': 6}
+    ]
+    
+    # Добавляем категории товаров
+    for category in product_categories:
+        dictionary_item = Dictionary(
+            type='product_categories',
+            code=category['code'],
+            name=category['name'],
+            sort_order=category['sort_order'],
+            is_active=True
+        )
+        db.session.add(dictionary_item)
+    
+    # Добавляем статусы заказов
+    for status in order_statuses:
+        dictionary_item = Dictionary(
+            type='order_statuses',
+            code=status['code'],
+            name=status['name'],
+            sort_order=status['sort_order'],
+            is_active=True
+        )
+        db.session.add(dictionary_item)
+    
+    # Добавляем типы операций со складом
+    for operation_type in stock_operation_types:
+        dictionary_item = Dictionary(
+            type='stock_operation_types',
+            code=operation_type['code'],
+            name=operation_type['name'],
+            sort_order=operation_type['sort_order'],
+            is_active=True
+        )
+        db.session.add(dictionary_item)
+    
+    db.session.commit()
+    print("Справочники успешно инициализированы.")
 
 app = create_app()
 

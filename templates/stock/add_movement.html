@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block title %}Добавление движения товара - Учет продаж металлопроката{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Добавление движения товара</h1>
+    <a href="{{ url_for('stock.index') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Назад к складу
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form method="post" action="{{ url_for('stock.add_movement') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            
+            <div class="mb-3">
+                <label for="stock_id" class="form-label">Товар на складе:</label>
+                <select name="stock_id" id="stock_id" class="form-select" required>
+                    <option value="">Выберите товар</option>
+                    {% for stock in stocks %}
+                    <option value="{{ stock.id }}">{{ stock.category }} {{ stock.name }} ({{ stock.characteristics }}) - Доступно: {{ stock.available_quantity }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="mb-3">
+                <label for="operation_type" class="form-label">Тип операции:</label>
+                <select name="operation_type" id="operation_type" class="form-select" required>
+                    <option value="">Выберите тип операции</option>
+                    {% for operation_type in operation_types %}
+                    <option value="{{ operation_type }}">{{ operation_type }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="mb-3">
+                <label for="quantity" class="form-label">Количество:</label>
+                <input type="number" name="quantity" id="quantity" class="form-control" step="0.01" min="0.01" required>
+            </div>
+            
+            <div class="mb-3">
+                <label for="purchase_price" class="form-label">Закупочная цена:</label>
+                <input type="number" name="purchase_price" id="purchase_price" class="form-control" step="0.01" min="0.01" required>
+            </div>
+            
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary">Добавить движение товара</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const stockSelect = document.getElementById('stock_id');
+        const purchasePriceInput = document.getElementById('purchase_price');
+        
+        // При выборе товара заполняем закупочную цену
+        stockSelect.addEventListener('change', function() {
+            const selectedOption = stockSelect.options[stockSelect.selectedIndex];
+            if (selectedOption.value) {
+                // Здесь можно добавить AJAX-запрос для получения закупочной цены выбранного товара
+                // Или передать закупочные цены в шаблон и использовать их здесь
+            }
+        });
+        
+        // При выборе типа операции меняем поведение формы
+        const operationTypeSelect = document.getElementById('operation_type');
+        const quantityInput = document.getElementById('quantity');
+        
+        operationTypeSelect.addEventListener('change', function() {
+            const selectedOption = operationTypeSelect.options[operationTypeSelect.selectedIndex];
+            if (selectedOption.value === 'поступление') {
+                // Для поступления нет ограничений на количество
+                quantityInput.min = '0.01';
+            } else {
+                // Для отгрузки и списания нужно проверять доступное количество
+                // Здесь можно добавить проверку на доступное количество
+            }
+        });
+    });
+</script>
+{% endblock %} 

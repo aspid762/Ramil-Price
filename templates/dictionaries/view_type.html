@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} - Справочники - Учет продаж металлопроката{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>{{ title }}</h1>
+    <div>
+        <a href="{{ url_for('dictionary.create', type=type) }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Добавить значение
+        </a>
+        <a href="{{ url_for('dictionary.index') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Назад к справочникам
+        </a>
+    </div>
+</div>
+
+{% if values %}
+<div class="table-responsive">
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>Код</th>
+                <th>Название</th>
+                <th>Порядок сортировки</th>
+                <th>Статус</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for value in values %}
+            <tr>
+                <td>{{ value.code }}</td>
+                <td>{{ value.name }}</td>
+                <td>{{ value.sort_order }}</td>
+                <td>
+                    {% if value.is_active %}
+                    <span class="badge bg-success">Активно</span>
+                    {% else %}
+                    <span class="badge bg-danger">Неактивно</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <div class="btn-group">
+                        <a href="{{ url_for('dictionary.edit', type=type, id=value.id) }}" class="btn btn-sm btn-outline-primary btn-action" title="Редактировать">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <form method="post" action="{{ url_for('dictionary.delete', type=type, id=value.id) }}" class="d-inline" onsubmit="return confirmDelete(event)">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm btn-outline-danger btn-action btn-delete" title="Удалить" data-confirm-message="Вы уверены, что хотите удалить это значение из справочника?">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="alert alert-info">
+    Справочник пуст. <a href="{{ url_for('dictionary.create', type=type) }}">Добавьте первое значение</a>
+</div>
+{% endif %}
+{% endblock %} 

@@ -1,8 +1,9 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, send_file
-from models import db, Product, PriceHistory
+from models import db, Product, PriceHistory, Dictionary
 from datetime import datetime, timedelta, timedelta
 from sqlalchemy import or_
 from utils.excel_export import export_products_to_excel
+from utils.dictionary_helpers import get_dictionary_values
 
 product_bp = Blueprint('product', __name__, url_prefix='/products')
 
@@ -48,8 +49,6 @@ def index():
 @product_bp.route('/create', methods=['GET', 'POST'])
 def create():
     """Создание новой позиции в прайс-листе"""
-    from config import Config
-    
     if request.method == 'POST':
         category = request.form.get('category')
         name = request.form.get('name')
@@ -71,12 +70,16 @@ def create():
         flash('Позиция успешно добавлена в прайс-лист', 'success')
         return redirect(url_for('product.index'))
     
-    return render_template('products/create.html', categories=Config.PRODUCT_CATEGORIES)
+    # Получаем категории из справочника
+    from config import Config
+    categories = get_dictionary_values('product_categories', Config.PRODUCT_CATEGORIES)
+    
+    return render_template('products/create.html', categories=categories)
 
 @product_bp.route('/edit/<int:id>', methods=['GET', 'POST'])
 def edit(id):
     """Редактирование позиции в прайс-листе"""
-    from config import Config
+    from models import Dictionary
     
     product = Product.query.get_or_404(id)
     
@@ -104,7 +107,16 @@ def edit(id):
         flash('Позиция успешно обновлена', 'success')
         return redirect(url_for('product.index'))
     
-    return render_template('products/edit.html', product=product, categories=Config.PRODUCT_CATEGORIES)
+    # Получаем категории из справочника
+    categories = Dictionary.query.filter_by(type='product_categories', is_active=True).order_by(Dictionary.sort_order, Dictionary.name).all()
+    categories = [category.name for category in categories]
+    
+    # Если категорий нет в справочнике, используем значения по умолчанию
+    if not categories:
+        from config import Config
+        categories = Config.PRODUCT_CATEGORIES
+    
+    return render_template('products/edit.html', product=product, categories=categories)
 
 @product_bp.route('/delete/<int:id>', methods=['POST'])
 def delete(id):

@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}Добавление значения - {{ title }} - Справочники - Учет продаж металлопроката{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Добавление значения в справочник "{{ title }}"</h1>
+    <a href="{{ url_for('dictionary.view_type', type=type) }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Назад к справочнику
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form method="post" action="{{ url_for('dictionary.create', type=type) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            
+            <div class="mb-3">
+                <label for="code" class="form-label">Код:</label>
+                <input type="text" name="code" id="code" class="form-control" required>
+                <small class="form-text text-muted">Код используется в программе. Используйте только латинские буквы, цифры и символы подчеркивания.</small>
+            </div>
+            
+            <div class="mb-3">
+                <label for="name" class="form-label">Название:</label>
+                <input type="text" name="name" id="name" class="form-control" required>
+                <small class="form-text text-muted">Название отображается пользователям.</small>
+            </div>
+            
+            <div class="mb-3">
+                <label for="sort_order" class="form-label">Порядок сортировки:</label>
+                <input type="number" name="sort_order" id="sort_order" class="form-control" value="0" min="0">
+                <small class="form-text text-muted">Значения с меньшим порядком сортировки отображаются выше.</small>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">Добавить значение</button>
+        </form>
+    </div>
+</div>
+{% endblock %} 

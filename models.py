@@ -151,4 +151,22 @@ class StockMovement(db.Model):
     order = db.relationship('Order', backref=db.backref('stock_movements', lazy='dynamic'))
     
     def __repr__(self):
-        return f'<StockMovement {self.operation_type} {self.quantity} of {self.stock_id}>' 
+        return f'<StockMovement {self.operation_type} {self.quantity} of {self.stock_id}>'
+
+class Dictionary(db.Model):
+    """Модель для хранения справочников"""
+    id = db.Column(db.Integer, primary_key=True)
+    type = db.Column(db.String(50), nullable=False)  # Тип справочника (категории, статусы и т.д.)
+    code = db.Column(db.String(50), nullable=False)  # Код значения (для программного использования)
+    name = db.Column(db.String(100), nullable=False)  # Название значения (для отображения)
+    sort_order = db.Column(db.Integer, default=0)  # Порядок сортировки
+    is_active = db.Column(db.Boolean, default=True)  # Активно ли значение
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    __table_args__ = (
+        db.UniqueConstraint('type', 'code', name='uix_dictionary_type_code'),
+    )
+    
+    def __repr__(self):
+        return f"<Dictionary {self.type}: {self.code} - {self.name}>" 
