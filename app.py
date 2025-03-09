@@ -3,7 +3,7 @@ import datetime
 import platform
 import os
 from config import Config
-from models import db, Product, PriceHistory, Customer, Order, OrderItem, Stock, Shipment, StockMovement
+from models import db, Product, PriceHistory, Customer, Order, OrderItem, Stock, StockMovement
 from flask_wtf.csrf import CSRFProtect
 from flask_migrate import Migrate
 
@@ -37,120 +37,110 @@ def create_app(config_class=Config):
     app.register_blueprint(analytics_bp)
     
     @app.route('/health')
-    def health():
-        """Проверка работоспособности сервиса"""
+    def health_check():
+        """Проверка работоспособности приложения."""
         return {
             'status': 'ok',
-            'timestamp': datetime.datetime.now().isoformat()
+            'timestamp': datetime.datetime.now().isoformat(),
+            'python_version': platform.python_version(),
+            'platform': platform.platform()
         }
     
-    @app.route('/info')
-    def info():
-        """Информация о приложении и окружении"""
-        return {
-            'app_name': 'Учет продаж металлопроката',
-            'version': '1.0.0',
-            'python_version': platform.python_version(),
-            'platform': platform.platform(),
-            'timestamp': datetime.datetime.now().isoformat()
-        }
+    # Проверяем существование базы данных и создаем её при необходимости
+    with app.app_context():
+        db_path = app.config['SQLALCHEMY_DATABASE_URI'].replace('sqlite:///', '')
+        if not os.path.exists(db_path):
+            print(f"База данных не найдена. Создаем новую базу данных: {db_path}")
+            db.create_all()
+            init_db()  # Заполняем тестовыми данными
+        else:
+            print(f"База данных найдена: {db_path}")
     
     return app
 
-# Создаем экземпляр приложения
-app = create_app()
-
-# Функция для инициализации базы данных
 def init_db():
-    """Инициализация базы данных тестовыми данными"""
-    # Проверяем, есть ли уже данные в базе
-    if Product.query.count() > 0:
-        return
+    """Инициализирует базу данных тестовыми данными."""
+    print("Заполнение базы данных тестовыми данными...")
     
-    # Добавляем товары в прайс-лист
-    products = [
-        Product(
-            category='Арматура',
-            name='А500С',
-            characteristics='Диаметр 10 мм',
-            price_per_ton=65000,
-            weight_per_meter=0.617
-        ),
-        Product(
-            category='Арматура',
-            name='А500С',
-            characteristics='Диаметр 12 мм',
-            price_per_ton=65000,
-            weight_per_meter=0.888
-        ),
-        Product(
-            category='Труба профильная',
-            name='40x20x2',
-            characteristics='Прямоугольная',
-            price_per_ton=75000,
-            weight_per_meter=1.33
-        ),
-        Product(
-            category='Труба профильная',
-            name='40x40x2',
-            characteristics='Квадратная',
-            price_per_ton=75000,
-            weight_per_meter=2.47
-        ),
-        Product(
-            category='Профнастил',
-            name='С8',
-            characteristics='Оцинкованный, толщина 0.5 мм',
-            price_per_ton=85000,
-            weight_per_meter=4.5
-        )
-    ]
+    # Создаем тестовых заказчиков
+    customer1 = Customer(
+        name='ООО "Стройкомплект"',
+        phone='+7 (123) 456-78-90',
+        address='г. Москва, ул. Строителей, 10',
+        margin=5.0,
+        delivery_fee=2000.0
+    )
     
-    for product in products:
-        db.session.add(product)
+    customer2 = Customer(
+        name='ИП Иванов А.А.',
+        phone='+7 (987) 654-32-10',
+        address='г. Санкт-Петербург, пр. Ленина, 25',
+        margin=3.0,
+        delivery_fee=1500.0
+    )
     
-    # Добавляем заказчиков
-    customers = [
-        Customer(
-            name='ООО "Строитель"',
-            phone='+7 (123) 456-78-90',
-            address='г. Москва, ул. Строительная, д. 1',
-            margin=10.0,
-            delivery_fee=2000.0
-        ),
-        Customer(
-            name='ИП Иванов И.И.',
-            phone='+7 (987) 654-32-10',
-            address='г. Санкт-Петербург, пр. Металлистов, д. 5',
-            margin=5.0,
-            delivery_fee=1500.0
-        )
-    ]
-    
-    for customer in customers:
-        db.session.add(customer)
-    
+    db.session.add(customer1)
+    db.session.add(customer2)
     db.session.commit()
     
-    # Добавляем товары на склад
+    # Создаем тестовые товары
+    product1 = Product(
+        category='Трубы',
+        name='Труба профильная',
+        characteristics='40x20x2 мм',
+        price_per_ton=65000.0,
+        weight_per_meter=1.78
+    )
+    
+    product2 = Product(
+        category='Трубы',
+        name='Труба круглая',
+        characteristics='Ø32x3 мм',
+        price_per_ton=70000.0,
+        weight_per_meter=2.12
+    )
+    
+    product3 = Product(
+        category='Листы',
+        name='Лист горячекатаный',
+        characteristics='3 мм',
+        price_per_ton=60000.0,
+        weight_per_meter=23.55
+    )
+    
+    db.session.add(product1)
+    db.session.add(product2)
+    db.session.add(product3)
+    db.session.commit()
+    
+    # Создаем тестовые позиции на складе
     stock_items = [
         Stock(
-            category='Арматура',
-            name='А500С',
-            characteristics='Диаметр 10 мм',
+            category='Трубы',
+            name='Труба профильная',
+            characteristics='40x20x2 мм',
             quantity=1000.0,
             reserved_quantity=0.0,
             purchase_price=60000.0,
-            received_at=datetime.datetime.now()
+            received_at=datetime.datetime.now() - datetime.timedelta(days=10)
         ),
         Stock(
-            category='Труба профильная',
-            name='40x20x2',
-            characteristics='Прямоугольная',
+            category='Трубы',
+            name='Труба круглая',
+            characteristics='Ø32x3 мм',
             quantity=500.0,
             reserved_quantity=0.0,
-            purchase_price=70000.0,
-            received_at=datetime.datetime.now()
+            purchase_price=65000.0,
+            received_at=datetime.datetime.now() - datetime.timedelta(days=7)
+        ),
+        Stock(
+            category='Листы',
+            name='Лист горячекатаный',
+            characteristics='3 мм',
+            quantity=300.0,
+            reserved_quantity=0.0,
+            purchase_price=55000.0,
+            received_at=datetime.datetime.now() - datetime.timedelta(days=5)
         )
     ]
     
@@ -159,76 +149,7 @@ def init_db():
     
     db.session.commit()
     
-    # Создаем заказы
-    order1 = Order(
-        customer_id=customers[0].id,
-        created_at=datetime.datetime.now(),
-        status='новый',
-        expected_shipping=datetime.datetime.now() + datetime.timedelta(days=3)
-    )
-    
-    db.session.add(order1)
-    db.session.commit()  # Сохраняем заказ, чтобы получить ID
-    
-    # Добавляем позиции в заказ
-    order_item1 = OrderItem(
-        order_id=order1.id,
-        product_id=products[0].id,
-        quantity=100.0,
-        margin=customers[0].margin,
-        selling_price=products[0].price_per_meter * (1 + customers[0].margin/100)
-    )
-    
-    order_item2 = OrderItem(
-        order_id=order1.id,
-        product_id=products[2].id,
-        quantity=50.0,
-        margin=customers[0].margin,
-        selling_price=products[2].price_per_meter * (1 + customers[0].margin/100)
-    )
-    
-    db.session.add(order_item1)
-    db.session.add(order_item2)
-    
-    # Создаем второй заказ
-    order2 = Order(
-        customer_id=customers[1].id,
-        created_at=datetime.datetime.now(),
-        status='в обработке',
-        expected_shipping=datetime.datetime.now() + datetime.timedelta(days=5)
-    )
-    
-    db.session.add(order2)
-    db.session.commit()  # Сохраняем заказ, чтобы получить ID
-    
-    # Добавляем позиции в заказ под закупку
-    product = Product.query.filter_by(category='Профнастил').first()
-    if product:
-        # Ручная закупочная цена
-        custom_price = 320  # Цена за метр
-        
-        order_item3 = OrderItem(
-            order_id=order2.id,  # Теперь у нас есть ID заказа
-            product_id=product.id,
-            quantity=20,
-            margin=15.0,
-            custom_purchase_price=custom_price,
-            selling_price=custom_price * 1.15 * (1 + customers[1].margin/100)
-        )
-        db.session.add(order_item3)
-    
-    # Обновляем общую стоимость заказов
-    for order in [order1, order2]:
-        total = sum(item.selling_price * item.quantity for item in order.items)
-        
-        # Добавляем стоимость доставки, если есть
-        customer = Customer.query.get(order.customer_id)
-        if customer and customer.delivery_fee > 0:
-            total += customer.delivery_fee
-            
-        order.total_cost = total
-    
-    # Добавляем движения товаров на складе
+    # Создаем тестовые движения товаров
     stock_movement1 = StockMovement(
         stock_id=stock_items[0].id,
         operation_type='поступление',
@@ -249,9 +170,62 @@ def init_db():
     db.session.add(stock_movement2)
     
     db.session.commit()
+    
+    # Создаем тестовые заказы
+    order1 = Order(
+        customer_id=customer1.id,
+        status='новый',
+        created_at=datetime.datetime.now() - datetime.timedelta(days=2),
+        expected_shipping=datetime.datetime.now() + datetime.timedelta(days=3)
+    )
+    
+    order2 = Order(
+        customer_id=customer2.id,
+        status='в обработке',
+        created_at=datetime.datetime.now() - datetime.timedelta(days=1),
+        expected_shipping=datetime.datetime.now() + datetime.timedelta(days=2)
+    )
+    
+    db.session.add(order1)
+    db.session.add(order2)
+    db.session.commit()
+    
+    # Создаем тестовые позиции заказов
+    order_item1 = OrderItem(
+        order_id=order1.id,
+        product_id=product1.id,
+        quantity=100.0,
+        selling_price=product1.price_per_meter
+    )
+    
+    order_item2 = OrderItem(
+        order_id=order1.id,
+        product_id=product2.id,
+        quantity=50.0,
+        selling_price=product2.price_per_meter
+    )
+    
+    order_item3 = OrderItem(
+        order_id=order2.id,
+        product_id=product3.id,
+        quantity=20.0,
+        selling_price=product3.price_per_meter
+    )
+    
+    db.session.add(order_item1)
+    db.session.add(order_item2)
+    db.session.add(order_item3)
+    
+    # Обновляем общую стоимость заказов
+    order1.total_cost = sum(item.selling_price * item.quantity for item in [order_item1, order_item2])
+    order2.total_cost = sum(item.selling_price * item.quantity for item in [order_item3])
+    
+    db.session.commit()
+    
+    print("База данных успешно заполнена тестовыми данными.")
+
+app = create_app()
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
-    with app.app_context():
-        init_db()  # Инициализируем БД только при прямом запуске app.py
     app.run(host='0.0.0.0', port=port, debug=True) 
