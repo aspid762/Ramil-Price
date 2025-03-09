@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block title %}Редактирование позиции - Заказ #{{ order.id }} - Учет продаж металлопроката{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Редактирование позиции</h1>
+    <a href="{{ url_for('order.edit', id=order.id) }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Назад к заказу
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form method="post" action="{{ url_for('order.edit_item', id=order.id, item_id=item.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            
+            <div class="mb-3">
+                <label class="form-label">Товар</label>
+                <input type="text" class="form-control" value="{% if item.product %}{{ item.product.category }} {{ item.product.name }} ({{ item.product.characteristics }}){% elif item.stock %}{{ item.stock.category }} {{ item.stock.name }} ({{ item.stock.characteristics }}){% endif %}" readonly>
+            </div>
+            
+            <div class="mb-3">
+                <label for="quantity" class="form-label">Количество</label>
+                <input type="number" name="quantity" id="quantity" class="form-control" step="0.01" min="0.01" value="{{ item.quantity }}" required>
+            </div>
+            
+            <div class="mb-3">
+                <label for="margin" class="form-label">Наценка, %</label>
+                <input type="number" name="margin" id="margin" class="form-control" step="0.1" min="0" value="{{ item.margin }}" required>
+                <small class="form-text text-muted">Стандартная наценка для заказчика: {{ order.customer.margin }}%</small>
+            </div>
+            
+            {% if item.product_id %}
+            <div class="mb-3">
+                <label for="custom_price" class="form-label">Ручная цена за единицу (руб.)</label>
+                <input type="number" name="custom_price" id="custom_price" class="form-control" step="0.01" min="0" value="{{ item.custom_purchase_price }}">
+                <small class="form-text text-muted">Оставьте пустым, чтобы использовать цену из прайс-листа</small>
+            </div>
+            {% endif %}
+            
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-info">Сохранить изменения</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %} 

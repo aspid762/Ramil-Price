@@ -27,4 +27,12 @@ build/
 .idea/
 .vscode/
 *.swp
+
 *.swo 
+*.md
+
+# Файлы базы данных
+instance/
+*.db
+*.sqlite
+

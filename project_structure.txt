@@ -1,0 +1,28 @@
+metal_sales/
+├── app.py                  # Основной файл приложения
+├── config.py               # Конфигурация приложения
+├── models.py               # Модели SQLAlchemy
+├── routes/                 # Маршруты Flask
+│   ├── __init__.py
+│   ├── product_routes.py   # Маршруты для прайс-листа
+│   ├── customer_routes.py  # Маршруты для заказчиков
+│   ├── order_routes.py     # Маршруты для заказов
+│   ├── stock_routes.py     # Маршруты для склада
+│   └── report_routes.py    # Маршруты для отчетов
+├── static/                 # Статические файлы
+│   ├── css/
+│   │   └── style.css
+│   └── js/
+│       └── main.js
+├── templates/              # Шаблоны Jinja2
+│   ├── base.html           # Базовый шаблон
+│   ├── products/           # Шаблоны для прайс-листа
+│   ├── customers/          # Шаблоны для заказчиков
+│   ├── orders/             # Шаблоны для заказов
+│   ├── stock/              # Шаблоны для склада
+│   └── reports/            # Шаблоны для отчетов
+├── utils/                  # Вспомогательные функции
+│   ├── __init__.py
+│   ├── excel_export.py     # Функции для экспорта в Excel
+│   └── helpers.py          # Общие вспомогательные функции
+└── requirements.txt        # Зависимости проекта 

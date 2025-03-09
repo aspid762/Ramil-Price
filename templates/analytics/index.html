@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block title %}Аналитика - Учет продаж металлопроката{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h1 class="mb-4">Аналитика</h1>
+    
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-chart-line fa-4x mb-3 text-primary"></i>
+                    <h3 class="card-title">Продажи</h3>
+                    <p class="card-text">Анализ динамики продаж, топ товаров и заказчиков.</p>
+                    <a href="{{ url_for('analytics.sales') }}" class="btn btn-primary">Перейти</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-boxes fa-4x mb-3 text-success"></i>
+                    <h3 class="card-title">Товары</h3>
+                    <p class="card-text">Анализ продаж по категориям товаров и топ продаваемых позиций.</p>
+                    <a href="{{ url_for('analytics.products') }}" class="btn btn-success">Перейти</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-users fa-4x mb-3 text-info"></i>
+                    <h3 class="card-title">Заказчики</h3>
+                    <p class="card-text">Анализ заказчиков по сумме заказов и частоте покупок.</p>
+                    <a href="{{ url_for('analytics.customers') }}" class="btn btn-info">Перейти</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">Общая информация</h5>
+                </div>
+                <div class="card-body">
+                    <p>
+                        Раздел аналитики позволяет получить детальную информацию о продажах, товарах и заказчиках.
+                        Используйте различные фильтры для анализа данных за разные периоды времени.
+                    </p>
+                    <p>
+                        Вы можете:
+                    </p>
+                    <ul>
+                        <li>Анализировать динамику продаж</li>
+                        <li>Выявлять наиболее популярные товары</li>
+                        <li>Определять ключевых заказчиков</li>
+                        <li>Отслеживать тренды продаж по категориям</li>
+                        <li>Анализировать средний чек и частоту заказов</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block title %}Добавление позиции из прайс-листа - Заказ #{{ order.id }} - Учет продаж металлопроката{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Добавление позиции из прайс-листа</h1>
+    <a href="{{ url_for('order.edit', id=order.id) }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Назад к заказу
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form method="post" action="{{ url_for('order.add_item_from_price', id=order.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            
+            <div class="mb-3">
+                <label for="product_id" class="form-label">Товар из прайс-листа</label>
+                <select name="product_id" id="product_id" class="form-select" required>
+                    <option value="">Выберите товар</option>
+                    {% for product in products %}
+                    <option value="{{ product.id }}">
+                        {{ product.category }} {{ product.name }} ({{ product.characteristics }}) - {{ product.price_per_meter|round(2) }} руб./м
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="mb-3">
+                <label for="quantity" class="form-label">Количество</label>
+                <input type="number" name="quantity" id="quantity" class="form-control" step="0.01" min="0.01" required>
+            </div>
+            
+            <div class="mb-3">
+                <label for="custom_price" class="form-label">Ручная цена за единицу (руб.)</label>
+                <input type="number" name="custom_price" id="custom_price" class="form-control" step="0.01" min="0">
+                <small class="form-text text-muted">Оставьте пустым, чтобы использовать цену из прайс-листа</small>
+            </div>
+            
+            <div class="mb-3">
+                <label for="margin" class="form-label">Наценка, %</label>
+                <input type="number" name="margin" id="margin" class="form-control" step="0.1" min="0" value="{{ order.customer.margin }}" required>
+                <small class="form-text text-muted">Стандартная наценка для заказчика: {{ order.customer.margin }}%</small>
+            </div>
+            
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-info">Добавить позицию</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %} 

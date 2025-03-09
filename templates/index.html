@@ -1,45 +1,65 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Тестовое приложение Flask</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            line-height: 1.6;
-        }
-        h1 {
-            color: #333;
-        }
-        .endpoint {
-            background-color: #f5f5f5;
-            padding: 15px;
-            margin-bottom: 15px;
-            border-radius: 5px;
-        }
-        .endpoint h3 {
-            margin-top: 0;
-        }
-    </style>
-</head>
-<body>
-    <h1>Тестовое приложение Flask</h1>
-    <p>Это простое приложение для проверки работоспособности сервиса.</p>
-    
-    <div class="endpoint">
-        <h3>Эндпоинт: /health</h3>
-        <p>Проверка работоспособности сервиса.</p>
-        <a href="/health" target="_blank">Открыть /health</a>
+{% extends 'base.html' %}
+
+{% block title %}Главная - Учет продаж металлопроката{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Учет продаж металлопроката</h4>
+            </div>
+            <div class="card-body">
+                <p class="lead">Добро пожаловать в систему учета продаж металлопроката!</p>
+                <p>Эта система позволяет вести учет продаж металлопроката, управлять прайс-листом, заказами и складом.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 col-lg-3 mb-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-list fa-3x mb-3 text-primary"></i>
+                <h5 class="card-title">Прайс-лист</h5>
+                <p class="card-text">Управление позициями прайс-листа и ценами.</p>
+                <a href="{{ url_for('product.index') }}" class="btn btn-primary">Перейти</a>
+            </div>
+        </div>
     </div>
     
-    <div class="endpoint">
-        <h3>Эндпоинт: /info</h3>
-        <p>Информация о приложении и окружении.</p>
-        <a href="/info" target="_blank">Открыть /info</a>
+    <div class="col-md-6 col-lg-3 mb-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-users fa-3x mb-3 text-success"></i>
+                <h5 class="card-title">Заказчики</h5>
+                <p class="card-text">Управление базой заказчиков.</p>
+                <a href="{{ url_for('customer.index') }}" class="btn btn-success">Перейти</a>
+            </div>
+        </div>
     </div>
-</body>
-</html> 
+    
+    <div class="col-md-6 col-lg-3 mb-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-shopping-cart fa-3x mb-3 text-info"></i>
+                <h5 class="card-title">Заказы</h5>
+                <p class="card-text">Управление заказами и отгрузками.</p>
+                <a href="{{ url_for('order.index') }}" class="btn btn-info">Перейти</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-lg-3 mb-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-warehouse fa-3x mb-3 text-warning"></i>
+                <h5 class="card-title">Склад</h5>
+                <p class="card-text">Управление складскими запасами.</p>
+                <a href="{{ url_for('stock.index') }}" class="btn btn-warning">Перейти</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+
+{% block title %}Поиск - Учет продаж металлопроката{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">Поиск</h1>
+    
+    <form action="{{ url_for('search.index') }}" method="get" class="mb-4">
+        <div class="input-group">
+            <input type="text" name="q" class="form-control form-control-lg" placeholder="Введите запрос (минимум 3 символа)" value="{{ query }}" required minlength="3">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-search"></i> Поиск
+            </button>
+        </div>
+    </form>
+    
+    {% if query and results %}
+        <div class="row">
+            <!-- Результаты поиска по товарам -->
+            {% if results.products %}
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Товары ({{ results.products|length }})</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group">
+                            {% for product in results.products %}
+                            <a href="{{ url_for('product.edit', id=product.id) }}" class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h5 class="mb-1">{{ product.category }} {{ product.name }}</h5>
+                                    <small>{{ product.price_per_ton|round(2) }} ₽/т</small>
+                                </div>
+                                <p class="mb-1">{{ product.characteristics }}</p>
+                                <small>{{ product.weight_per_meter|round(3) }} кг/м, {{ product.price_per_meter|round(2) }} ₽/м</small>
+                            </a>
+                            {% endfor %}
+                        </div>
+                        {% if results.products|length == 10 %}
+                        <div class="mt-2">
+                            <a href="{{ url_for('product.index', search=query) }}" class="btn btn-sm btn-outline-primary">Показать все результаты</a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Результаты поиска по заказчикам -->
+            {% if results.customers %}
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">Заказчики ({{ results.customers|length }})</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group">
+                            {% for customer in results.customers %}
+                            <a href="{{ url_for('customer.edit', id=customer.id) }}" class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h5 class="mb-1">{{ customer.name }}</h5>
+                                    <small>Наценка: {{ customer.margin }}%</small>
+                                </div>
+                                <p class="mb-1">{{ customer.phone }}</p>
+                                <small>{{ customer.address }}</small>
+                            </a>
+                            {% endfor %}
+                        </div>
+                        {% if results.customers|length == 10 %}
+                        <div class="mt-2">
+                            <a href="{{ url_for('customer.index', search=query) }}" class="btn btn-sm btn-outline-success">Показать все результаты</a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Результаты поиска по заказам -->
+            {% if results.orders %}
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">Заказы ({{ results.orders|length }})</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group">
+                            {% for order in results.orders %}
+                            <a href="{{ url_for('order.view', id=order.id) }}" class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h5 class="mb-1">Заказ #{{ order.id }}</h5>
+                                    <small>{{ order.created_at.strftime('%d.%m.%Y') }}</small>
+                                </div>
+                                <p class="mb-1">
+                                    Заказчик: {{ order.customer.name }}<br>
+                                    Статус: 
+                                    <span class="badge 
+                                        {% if order.status == 'новый' %}bg-primary
+                                        {% elif order.status == 'в обработке' %}bg-warning
+                                        {% elif order.status == 'отгружен' %}bg-success
+                                        {% elif order.status == 'отменен' %}bg-danger
+                                        {% else %}bg-secondary{% endif %}">
+                                        {{ order.status }}
+                                    </span>
+                                </p>
+                                <small>Сумма: {{ order.total_cost|round(2) }} ₽</small>
+                            </a>
+                            {% endfor %}
+                        </div>
+                        {% if results.orders|length == 10 %}
+                        <div class="mt-2">
+                            <a href="{{ url_for('order.index', search=query) }}" class="btn btn-sm btn-outline-info">Показать все результаты</a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Результаты поиска по складу -->
+            {% if results.stock_items %}
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0">Склад ({{ results.stock_items|length }})</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group">
+                            {% for item in results.stock_items %}
+                            <a href="{{ url_for('stock.view', id=item.id) }}" class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h5 class="mb-1">{{ item.category }} {{ item.name }}</h5>
+                                    <small>{{ item.purchase_price|round(2) }} ₽</small>
+                                </div>
+                                <p class="mb-1">{{ item.characteristics }}</p>
+                                <small>Доступно: {{ (item.quantity - item.reserved_quantity)|round(2) }}</small>
+                            </a>
+                            {% endfor %}
+                        </div>
+                        {% if results.stock_items|length == 10 %}
+                        <div class="mt-2">
+                            <a href="{{ url_for('stock.index', search=query) }}" class="btn btn-sm btn-outline-warning">Показать все результаты</a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    {% elif query %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> По запросу <strong>"{{ query }}"</strong> ничего не найдено. Попробуйте изменить запрос.
+        </div>
+    {% endif %}
+</div>
+{% endblock %} 

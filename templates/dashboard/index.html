@@ -1,0 +1,227 @@
+{% extends 'base.html' %}
+
+{% block title %}Главная - Учет продаж металлопроката{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h1 class="mb-4">Панель управления</h1>
+    
+    <!-- Карточки с ключевыми показателями -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Товары в прайс-листе</h5>
+                    <p class="card-text display-4">{{ stats.products_count }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Заказчики</h5>
+                    <p class="card-text display-4">{{ stats.customers_count }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Заказы</h5>
+                    <p class="card-text display-4">{{ stats.orders_count }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark">
+                <div class="card-body">
+                    <h5 class="card-title">Стоимость склада</h5>
+                    <p class="card-text display-4">{{ stats.total_stock_value|default(0)|round(2) }} ₽</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Графики -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">Продажи по месяцам</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="salesChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">Движение товаров</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="stockMovementChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Последние заказы и товары с низким запасом -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">Последние заказы</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_orders %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Заказчик</th>
+                                    <th>Дата</th>
+                                    <th>Статус</th>
+                                    <th>Сумма</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for order in recent_orders %}
+                                <tr>
+                                    <td>{{ order.id }}</td>
+                                    <td>{{ order.customer.name }}</td>
+                                    <td>{{ order.created_at.strftime('%d.%m.%Y') }}</td>
+                                    <td>
+                                        <span class="badge 
+                                            {% if order.status == 'новый' %}bg-primary
+                                            {% elif order.status == 'в обработке' %}bg-warning
+                                            {% elif order.status == 'отгружен' %}bg-success
+                                            {% elif order.status == 'отменен' %}bg-danger
+                                            {% else %}bg-secondary{% endif %}">
+                                            {{ order.status }}
+                                        </span>
+                                    </td>
+                                    <td>{{ order.total_cost|default(0)|round(2) }} ₽</td>
+                                    <td>
+                                        <a href="{{ url_for('order.view', id=order.id) }}" class="btn btn-sm btn-info">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">Нет заказов для отображения.</p>
+                    {% endif %}
+                    <a href="{{ url_for('order.index') }}" class="btn btn-primary">Все заказы</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">Товары с низким запасом</h5>
+                </div>
+                <div class="card-body">
+                    {% if low_stock_items %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Категория</th>
+                                    <th>Наименование</th>
+                                    <th>Доступно</th>
+                                    <th>Цена за единицу</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in low_stock_items %}
+                                <tr>
+                                    <td>{{ item.category }}</td>
+                                    <td>{{ item.name }}</td>
+                                    <td>{{ item.available_quantity|default(0)|round(2) }}</td>
+                                    <td>{{ item.purchase_price|default(0)|round(2) }} ₽</td>
+                                    <td>
+                                        <a href="{{ url_for('stock.view', id=item.id) }}" class="btn btn-sm btn-info">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">Нет товаров с низким запасом.</p>
+                    {% endif %}
+                    <a href="{{ url_for('stock.index') }}" class="btn btn-primary">Весь склад</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Подключаем Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Данные для графика продаж по месяцам
+    const salesData = {
+        labels: [{% for item in sales_by_month %}'{{ item.month }}',{% endfor %}],
+        datasets: [{
+            label: 'Продажи (₽)',
+            data: [{% for item in sales_by_month %}{{ item.sales|default(0) }},{% endfor %}],
+            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 1
+        }]
+    };
+    
+    // Данные для графика движения товаров
+    const stockMovementData = {
+        labels: [{% for item in stock_movement_data %}'{{ item.date }}',{% endfor %}],
+        datasets: [{
+            label: 'Количество',
+            data: [{% for item in stock_movement_data %}{{ item.quantity|default(0) }},{% endfor %}],
+            backgroundColor: 'rgba(255, 159, 64, 0.2)',
+            borderColor: 'rgba(255, 159, 64, 1)',
+            borderWidth: 1
+        }]
+    };
+    
+    // Создаем графики
+    document.addEventListener('DOMContentLoaded', function() {
+        // График продаж
+        const salesCtx = document.getElementById('salesChart').getContext('2d');
+        new Chart(salesCtx, {
+            type: 'bar',
+            data: salesData,
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+        
+        // График движения товаров
+        const stockCtx = document.getElementById('stockMovementChart').getContext('2d');
+        new Chart(stockCtx, {
+            type: 'line',
+            data: stockMovementData,
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %} 

@@ -1,0 +1,207 @@
+{% extends 'base.html' %}
+
+{% block title %}Аналитика по товарам - Учет продаж металлопроката{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h1 class="mb-4">Аналитика по товарам</h1>
+    
+    <!-- Фильтр по периоду -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" action="{{ url_for('analytics.products') }}" class="row g-3">
+                <div class="col-md-4">
+                    <label for="period" class="form-label">Период:</label>
+                    <select name="period" id="period" class="form-select" onchange="this.form.submit()">
+                        <option value="week" {% if period == 'week' %}selected{% endif %}>Неделя</option>
+                        <option value="month" {% if period == 'month' %}selected{% endif %}>Месяц</option>
+                        <option value="quarter" {% if period == 'quarter' %}selected{% endif %}>Квартал</option>
+                        <option value="year" {% if period == 'year' %}selected{% endif %}>Год</option>
+                    </select>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Графики -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">Продажи по категориям (₽)</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="categorySalesChart" width="400" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">Количество проданных товаров по категориям</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="categoryQuantityChart" width="400" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Топ товаров -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">Топ-10 самых продаваемых товаров</h5>
+                </div>
+                <div class="card-body">
+                    {% if top_products %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Категория</th>
+                                    <th>Наименование</th>
+                                    <th>Количество</th>
+                                    <th>Сумма продаж (₽)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for product in top_products %}
+                                <tr>
+                                    <td>{{ product.category }}</td>
+                                    <td>{{ product.name }}</td>
+                                    <td>{{ product.total_quantity|round(2) }}</td>
+                                    <td>{{ product.total_sales|round(2) }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">Нет данных для отображения.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Подключаем Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Данные для графика продаж по категориям
+    const categorySalesData = {
+        labels: [{% for item in category_data %}'{{ item.category }}',{% endfor %}],
+        datasets: [{
+            label: 'Продажи (₽)',
+            data: [{% for item in category_data %}{{ item.total }},{% endfor %}],
+            backgroundColor: [
+                'rgba(255, 99, 132, 0.5)',
+                'rgba(54, 162, 235, 0.5)',
+                'rgba(255, 206, 86, 0.5)',
+                'rgba(75, 192, 192, 0.5)',
+                'rgba(153, 102, 255, 0.5)',
+                'rgba(255, 159, 64, 0.5)',
+                'rgba(199, 199, 199, 0.5)',
+                'rgba(83, 102, 255, 0.5)',
+                'rgba(40, 159, 64, 0.5)',
+                'rgba(210, 199, 199, 0.5)'
+            ],
+            borderColor: [
+                'rgba(255, 99, 132, 1)',
+                'rgba(54, 162, 235, 1)',
+                'rgba(255, 206, 86, 1)',
+                'rgba(75, 192, 192, 1)',
+                'rgba(153, 102, 255, 1)',
+                'rgba(255, 159, 64, 1)',
+                'rgba(199, 199, 199, 1)',
+                'rgba(83, 102, 255, 1)',
+                'rgba(40, 159, 64, 1)',
+                'rgba(210, 199, 199, 1)'
+            ],
+            borderWidth: 1
+        }]
+    };
+    
+    // Данные для графика количества по категориям
+    const categoryQuantityData = {
+        labels: [{% for item in quantity_data %}'{{ item.category }}',{% endfor %}],
+        datasets: [{
+            label: 'Количество',
+            data: [{% for item in quantity_data %}{{ item.quantity }},{% endfor %}],
+            backgroundColor: [
+                'rgba(54, 162, 235, 0.5)',
+                'rgba(255, 99, 132, 0.5)',
+                'rgba(255, 206, 86, 0.5)',
+                'rgba(75, 192, 192, 0.5)',
+                'rgba(153, 102, 255, 0.5)',
+                'rgba(255, 159, 64, 0.5)',
+                'rgba(199, 199, 199, 0.5)',
+                'rgba(83, 102, 255, 0.5)',
+                'rgba(40, 159, 64, 0.5)',
+                'rgba(210, 199, 199, 0.5)'
+            ],
+            borderColor: [
+                'rgba(54, 162, 235, 1)',
+                'rgba(255, 99, 132, 1)',
+                'rgba(255, 206, 86, 1)',
+                'rgba(75, 192, 192, 1)',
+                'rgba(153, 102, 255, 1)',
+                'rgba(255, 159, 64, 1)',
+                'rgba(199, 199, 199, 1)',
+                'rgba(83, 102, 255, 1)',
+                'rgba(40, 159, 64, 1)',
+                'rgba(210, 199, 199, 1)'
+            ],
+            borderWidth: 1
+        }]
+    };
+    
+    // Создаем графики
+    document.addEventListener('DOMContentLoaded', function() {
+        // График продаж по категориям
+        const salesCtx = document.getElementById('categorySalesChart').getContext('2d');
+        new Chart(salesCtx, {
+            type: 'pie',
+            data: categorySalesData,
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Продажи по категориям'
+                    }
+                }
+            }
+        });
+        
+        // График количества по категориям
+        const quantityCtx = document.getElementById('categoryQuantityChart').getContext('2d');
+        new Chart(quantityCtx, {
+            type: 'bar',
+            data: categoryQuantityData,
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    title: {
+                        display: true,
+                        text: 'Количество проданных товаров по категориям'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %} 

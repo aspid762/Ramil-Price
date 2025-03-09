@@ -1,0 +1,175 @@
+{% extends 'base.html' %}
+
+{% block title %}Аналитика продаж - Учет продаж металлопроката{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h1 class="mb-4">Аналитика продаж</h1>
+    
+    <!-- Фильтр по периоду -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" action="{{ url_for('analytics.sales') }}" class="row g-3">
+                <div class="col-md-4">
+                    <label for="period" class="form-label">Период:</label>
+                    <select name="period" id="period" class="form-select" onchange="this.form.submit()">
+                        <option value="week" {% if period == 'week' %}selected{% endif %}>Неделя</option>
+                        <option value="month" {% if period == 'month' %}selected{% endif %}>Месяц</option>
+                        <option value="quarter" {% if period == 'quarter' %}selected{% endif %}>Квартал</option>
+                        <option value="year" {% if period == 'year' %}selected{% endif %}>Год</option>
+                    </select>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Карточки с ключевыми показателями -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Общая сумма продаж</h5>
+                    <p class="card-text display-4">{{ stats.total_sales|round(2) }} ₽</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Количество заказов</h5>
+                    <p class="card-text display-4">{{ stats.orders_count }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Средний чек</h5>
+                    <p class="card-text display-4">{{ stats.average_order|round(2) }} ₽</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- График продаж -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">Динамика продаж</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="salesChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Топ товаров и заказчиков -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">Топ-5 товаров по количеству</h5>
+                </div>
+                <div class="card-body">
+                    {% if top_products %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Категория</th>
+                                    <th>Наименование</th>
+                                    <th>Количество</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for product in top_products %}
+                                <tr>
+                                    <td>{{ product.category }}</td>
+                                    <td>{{ product.name }}</td>
+                                    <td>{{ product.total_quantity|round(2) }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">Нет данных для отображения.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">Топ-5 заказчиков по сумме</h5>
+                </div>
+                <div class="card-body">
+                    {% if top_customers %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Заказчик</th>
+                                    <th>Сумма</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for customer in top_customers %}
+                                <tr>
+                                    <td>{{ customer.name }}</td>
+                                    <td>{{ customer.total_amount|round(2) }} ₽</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">Нет данных для отображения.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Подключаем Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Данные для графика продаж
+    const salesData = {
+        labels: [{% for item in sales_data %}'{{ item.date }}',{% endfor %}],
+        datasets: [{
+            label: 'Продажи (₽)',
+            data: [{% for item in sales_data %}{{ item.total }},{% endfor %}],
+            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 1,
+            tension: 0.1
+        }]
+    };
+    
+    // Создаем график
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('salesChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: salesData,
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Динамика продаж'
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %} 

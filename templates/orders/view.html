@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+
+{% block title %}Заказ #{{ order.id }} - Учет продаж металлопроката{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Заказ #{{ order.id }}</h1>
+    <div>
+        <a href="{{ url_for('order.edit', id=order.id) }}" class="btn btn-info">
+            <i class="fas fa-edit"></i> Редактировать
+        </a>
+        <a href="{{ url_for('order.export', id=order.id) }}" class="btn btn-success">
+            <i class="fas fa-file-excel"></i> Экспорт в Excel
+        </a>
+        <a href="{{ url_for('order.index') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Назад к списку заказов
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">Информация о заказе</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Номер заказа:</strong> {{ order.id }}</p>
+                <p><strong>Дата создания:</strong> {{ order.created_at.strftime('%d.%m.%Y %H:%M') }}</p>
+                <p>
+                    <strong>Статус:</strong> 
+                    <span class="status-badge status-{{ order.status|replace(' ', '-')|replace('в', 'v') }}">
+                        {{ order.status }}
+                    </span>
+                </p>
+                {% if order.expected_shipping %}
+                <p><strong>Ожидаемая дата отгрузки:</strong> {{ order.expected_shipping.strftime('%d.%m.%Y') }}</p>
+                {% endif %}
+                {% if order.notes %}
+                <p><strong>Примечания:</strong> {{ order.notes }}</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">Информация о заказчике</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Название:</strong> <a href="{{ url_for('customer.view', id=order.customer.id) }}">{{ order.customer.name }}</a></p>
+                <p><strong>Телефон:</strong> {{ order.customer.phone }}</p>
+                <p><strong>Адрес:</strong> {{ order.customer.address }}</p>
+                <p><strong>Наценка:</strong> {{ order.customer.margin|round(2) }}%</p>
+                <p><strong>Стоимость доставки:</strong> {{ order.customer.delivery_fee|round(2) }} руб.</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Позиции заказа</h5>
+            </div>
+            <div class="card-body">
+                {% if order.items %}
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Товар</th>
+                                <th>Количество</th>
+                                <th>Цена, руб.</th>
+                                <th>Сумма, руб.</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in order.items %}
+                            <tr>
+                                <td>
+                                    {% if item.product %}
+                                    {{ item.product.category }} {{ item.product.name }} ({{ item.product.characteristics }})
+                                    {% elif item.stock %}
+                                    {{ item.stock.category }} {{ item.stock.name }} ({{ item.stock.characteristics }})
+                                    {% endif %}
+                                </td>
+                                <td>{{ item.quantity }}</td>
+                                <td>{{ item.selling_price|round(2) }}</td>
+                                <td>{{ (item.selling_price * item.quantity)|round(2) }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <th colspan="3" class="text-end">Итого:</th>
+                                <th>{{ order.items_total|round(2) }}</th>
+                            </tr>
+                            {% if order.customer.delivery_fee > 0 %}
+                            <tr>
+                                <th colspan="3" class="text-end">Доставка:</th>
+                                <th>{{ order.customer.delivery_fee|round(2) }}</th>
+                            </tr>
+                            <tr>
+                                <th colspan="3" class="text-end">Всего к оплате:</th>
+                                <th>{{ order.total_cost|round(2) if order.total_cost is not none else '—' }}</th>
+                            </tr>
+                            {% endif %}
+                        </tfoot>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    В заказе пока нет позиций.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

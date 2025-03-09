@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block title %}Отчеты - Учет продаж металлопроката{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h1 class="mb-4">Отчеты</h1>
+    
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-exchange-alt fa-4x mb-3 text-primary"></i>
+                    <h3 class="card-title">Движение товаров</h3>
+                    <p class="card-text">Отчет о поступлении и расходе товаров на складе.</p>
+                    <a href="{{ url_for('report.stock_movements') }}" class="btn btn-primary">Перейти</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-chart-line fa-4x mb-3 text-success"></i>
+                    <h3 class="card-title">История цен</h3>
+                    <p class="card-text">Отчет об изменении цен на товары.</p>
+                    <a href="{{ url_for('report.price_history') }}" class="btn btn-success">Перейти</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-shopping-cart fa-4x mb-3 text-info"></i>
+                    <h3 class="card-title">Продажи</h3>
+                    <p class="card-text">Отчет о продажах по периодам и категориям.</p>
+                    <a href="{{ url_for('analytics.sales') }}" class="btn btn-info">Перейти</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">Общая информация</h5>
+                </div>
+                <div class="card-body">
+                    <p>
+                        Раздел отчетов позволяет получить детальную информацию о движении товаров, изменении цен и продажах.
+                        Используйте различные фильтры для формирования отчетов за нужные периоды времени.
+                    </p>
+                    <p>
+                        Все отчеты можно экспортировать в Excel для дальнейшего анализа или печати.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

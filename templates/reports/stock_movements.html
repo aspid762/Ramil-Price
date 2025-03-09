@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+
+{% block title %}Движение товаров - Учет продаж металлопроката{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h1 class="mb-4">Отчет о движении товаров на складе</h1>
+    
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" action="{{ url_for('report.stock_movements') }}" class="row g-3">
+                <div class="col-md-3">
+                    <label for="start_date" class="form-label">Начальная дата:</label>
+                    <input type="date" class="form-control" id="start_date" name="start_date" value="{{ start_date.strftime('%Y-%m-%d') if start_date else '' }}">
+                </div>
+                <div class="col-md-3">
+                    <label for="end_date" class="form-label">Конечная дата:</label>
+                    <input type="date" class="form-control" id="end_date" name="end_date" value="{{ end_date.strftime('%Y-%m-%d') if end_date else '' }}">
+                </div>
+                <div class="col-md-3">
+                    <label for="operation_type" class="form-label">Тип операции:</label>
+                    <select class="form-select" id="operation_type" name="operation_type">
+                        <option value="">Все операции</option>
+                        {% for op_type in operation_types %}
+                        <option value="{{ op_type }}" {% if operation_type == op_type %}selected{% endif %}>{{ op_type }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">Применить фильтры</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">
+                Движение товаров за период: 
+                {{ start_date.strftime('%d.%m.%Y') if start_date else 'Все время' }} - 
+                {{ end_date.strftime('%d.%m.%Y') if end_date else 'Сегодня' }}
+            </h5>
+            <a href="{{ url_for('report.export_stock_movements', start_date=start_date.strftime('%Y-%m-%d') if start_date else '', end_date=end_date.strftime('%Y-%m-%d') if end_date else '', operation_type=operation_type) }}" class="btn btn-success">
+                <i class="fas fa-file-excel"></i> Экспорт в Excel
+            </a>
+        </div>
+        <div class="card-body">
+            {% if movements %}
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Дата</th>
+                            <th>Категория</th>
+                            <th>Наименование</th>
+                            <th>Характеристики</th>
+                            <th>Тип операции</th>
+                            <th>Количество</th>
+                            <th>Цена, руб.</th>
+                            <th>Сумма, руб.</th>
+                            <th>Заказ №</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for movement in movements %}
+                        <tr>
+                            <td>{{ movement.created_at.strftime('%d.%m.%Y %H:%M') }}</td>
+                            <td>{{ movement.stock.category if movement.stock else '' }}</td>
+                            <td>{{ movement.stock.name if movement.stock else '' }}</td>
+                            <td>{{ movement.stock.characteristics if movement.stock else '' }}</td>
+                            <td>
+                                <span class="badge 
+                                    {% if movement.operation_type == 'поступление' %}bg-success
+                                    {% elif movement.operation_type == 'списание' %}bg-danger
+                                    {% elif movement.operation_type == 'резервирование' %}bg-warning
+                                    {% elif movement.operation_type == 'отмена резервирования' %}bg-info
+                                    {% else %}bg-secondary{% endif %}">
+                                    {{ movement.operation_type }}
+                                </span>
+                            </td>
+                            <td>{{ movement.quantity|round(2) }}</td>
+                            <td>{{ movement.purchase_price|round(2) }}</td>
+                            <td>{{ (movement.quantity * movement.purchase_price)|round(2) }}</td>
+                            <td>
+                                {% if movement.order_id %}
+                                <a href="{{ url_for('order.view', id=movement.order_id) }}">{{ movement.order_id }}</a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                Нет данных о движении товаров за выбранный период.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

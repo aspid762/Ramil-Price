@@ -1,0 +1,216 @@
+{% extends 'base.html' %}
+
+{% block title %}Аналитика по заказчикам - Учет продаж металлопроката{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h1 class="mb-4">Аналитика по заказчикам</h1>
+    
+    <!-- Фильтр по периоду -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" action="{{ url_for('analytics.customers') }}" class="row g-3">
+                <div class="col-md-4">
+                    <label for="period" class="form-label">Период:</label>
+                    <select name="period" id="period" class="form-select" onchange="this.form.submit()">
+                        <option value="week" {% if period == 'week' %}selected{% endif %}>Неделя</option>
+                        <option value="month" {% if period == 'month' %}selected{% endif %}>Месяц</option>
+                        <option value="quarter" {% if period == 'quarter' %}selected{% endif %}>Квартал</option>
+                        <option value="year" {% if period == 'year' %}selected{% endif %}>Год</option>
+                    </select>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Графики -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">Топ-5 заказчиков по сумме заказов</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="topCustomersChart" width="400" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">Новые заказчики по месяцам</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="newCustomersChart" width="400" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Таблицы с данными -->
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">Топ-10 заказчиков по сумме заказов</h5>
+                </div>
+                <div class="card-body">
+                    {% if top_customers %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Заказчик</th>
+                                    <th>Сумма (₽)</th>
+                                    <th>Кол-во заказов</th>
+                                    <th>Средний чек (₽)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for customer in top_customers %}
+                                <tr>
+                                    <td>{{ customer.name }}</td>
+                                    <td>{{ customer.total_amount|round(2) }}</td>
+                                    <td>{{ customer.orders_count }}</td>
+                                    <td>{{ customer.average_order|round(2) }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">Нет данных для отображения.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">Заказчики с повторными заказами</h5>
+                </div>
+                <div class="card-body">
+                    {% if repeat_customers %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Заказчик</th>
+                                    <th>Количество заказов</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for customer in repeat_customers %}
+                                <tr>
+                                    <td>{{ customer.name }}</td>
+                                    <td>{{ customer.orders_count }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">Нет данных для отображения.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Подключаем Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Данные для графика топ заказчиков
+    const topCustomersData = {
+        labels: [{% for customer in top_customers[:5] %}'{{ customer.name }}',{% endfor %}],
+        datasets: [{
+            label: 'Сумма заказов (₽)',
+            data: [{% for customer in top_customers[:5] %}{{ customer.total_amount }},{% endfor %}],
+            backgroundColor: [
+                'rgba(255, 99, 132, 0.5)',
+                'rgba(54, 162, 235, 0.5)',
+                'rgba(255, 206, 86, 0.5)',
+                'rgba(75, 192, 192, 0.5)',
+                'rgba(153, 102, 255, 0.5)'
+            ],
+            borderColor: [
+                'rgba(255, 99, 132, 1)',
+                'rgba(54, 162, 235, 1)',
+                'rgba(255, 206, 86, 1)',
+                'rgba(75, 192, 192, 1)',
+                'rgba(153, 102, 255, 1)'
+            ],
+            borderWidth: 1
+        }]
+    };
+    
+    // Данные для графика новых заказчиков
+    const newCustomersData = {
+        labels: [{% for item in new_customers_data %}'{{ item.month }}',{% endfor %}],
+        datasets: [{
+            label: 'Новые заказчики',
+            data: [{% for item in new_customers_data %}{{ item.count }},{% endfor %}],
+            backgroundColor: 'rgba(54, 162, 235, 0.5)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 1
+        }]
+    };
+    
+    // Создаем графики
+    document.addEventListener('DOMContentLoaded', function() {
+        // График топ заказчиков
+        const topCtx = document.getElementById('topCustomersChart').getContext('2d');
+        new Chart(topCtx, {
+            type: 'bar',
+            data: topCustomersData,
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    title: {
+                        display: true,
+                        text: 'Топ-5 заказчиков по сумме заказов'
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+        
+        // График новых заказчиков
+        const newCtx = document.getElementById('newCustomersChart').getContext('2d');
+        new Chart(newCtx, {
+            type: 'line',
+            data: newCustomersData,
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    title: {
+                        display: true,
+                        text: 'Новые заказчики по месяцам'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %} 

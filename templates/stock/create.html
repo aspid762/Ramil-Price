@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %}Добавление поступления на склад - Учет продаж металлопроката{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Добавление поступления на склад</h1>
+    <a href="{{ url_for('stock.index') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Назад к складу
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form method="post" action="{{ url_for('stock.create') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            
+            <div class="mb-3">
+                <label for="category" class="form-label">Категория</label>
+                <select name="category" id="category" class="form-select" required>
+                    <option value="">Выберите категорию</option>
+                    {% for category in config.PRODUCT_CATEGORIES %}
+                    <option value="{{ category }}">{{ category }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="mb-3">
+                <label for="name" class="form-label">Наименование</label>
+                <input type="text" name="name" id="name" class="form-control" required>
+            </div>
+            
+            <div class="mb-3">
+                <label for="characteristics" class="form-label">Характеристики</label>
+                <input type="text" name="characteristics" id="characteristics" class="form-control" required>
+            </div>
+            
+            <div class="mb-3">
+                <label for="quantity" class="form-label">Количество</label>
+                <input type="number" name="quantity" id="quantity" class="form-control" step="0.01" min="0" required>
+            </div>
+            
+            <div class="mb-3">
+                <label for="purchase_price" class="form-label">Закупочная цена, руб.</label>
+                <input type="number" name="purchase_price" id="purchase_price" class="form-control" step="0.01" min="0" required>
+            </div>
+            
+            <div class="mb-3">
+                <label for="received_at" class="form-label">Дата поступления</label>
+                <input type="date" name="received_at" id="received_at" class="form-control" value="{{ today }}" required>
+            </div>
+            
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-warning">Добавить поступление</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %} 

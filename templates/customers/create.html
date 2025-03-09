@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}Добавление заказчика - Учет продаж металлопроката{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Добавление заказчика</h1>
+    <a href="{{ url_for('customer.index') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Назад к списку заказчиков
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form method="post" action="{{ url_for('customer.create') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            
+            <div class="mb-3">
+                <label for="name" class="form-label">Название</label>
+                <input type="text" name="name" id="name" class="form-control" required>
+            </div>
+            
+            <div class="mb-3">
+                <label for="phone" class="form-label">Телефон</label>
+                <input type="text" name="phone" id="phone" class="form-control" required>
+            </div>
+            
+            <div class="mb-3">
+                <label for="address" class="form-label">Адрес</label>
+                <input type="text" name="address" id="address" class="form-control" required>
+            </div>
+            
+            <div class="mb-3">
+                <label for="margin" class="form-label">Наценка, %</label>
+                <input type="number" name="margin" id="margin" class="form-control" step="0.1" min="0" value="10">
+                <small class="form-text text-muted">Стандартная наценка для этого заказчика</small>
+            </div>
+            
+            <div class="mb-3">
+                <label for="delivery_fee" class="form-label">Стоимость доставки, руб.</label>
+                <input type="number" name="delivery_fee" id="delivery_fee" class="form-control" step="0.01" min="0" value="0">
+                <small class="form-text text-muted">Оставьте 0, если доставка бесплатная</small>
+            </div>
+            
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-success">Добавить заказчика</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %} 

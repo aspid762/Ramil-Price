@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block title %}История изменения цен - {{ product.category }} {{ product.name }} - Учет продаж металлопроката{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>История изменения цен</h1>
+    <a href="{{ url_for('product.index') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Назад к прайс-листу
+    </a>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header bg-info text-white">
+        <h5 class="mb-0">{{ product.category }} {{ product.name }} ({{ product.characteristics }})</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <p><strong>Текущая цена за тонну:</strong> {{ product.price_per_ton|round(2) }} руб.</p>
+                <p><strong>Вес погонного метра:</strong> {{ product.weight_per_meter|round(3) }} кг</p>
+            </div>
+            <div class="col-md-6">
+                <p><strong>Цена за погонный метр:</strong> {{ product.price_per_meter|round(2) }} руб.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if history %}
+<div class="table-responsive">
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>Дата изменения</th>
+                <th>Цена за тонну, руб.</th>
+                <th>Предыдущая цена, руб.</th>
+                <th>Изменение, %</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in history %}
+            <tr>
+                <td>{{ item.created_at.strftime('%d.%m.%Y %H:%M') }}</td>
+                <td>{{ item.price_per_ton|round(2) }}</td>
+                <td>{{ item.previous_price|round(2) if item.previous_price else '—' }}</td>
+                <td>
+                    {% if item.previous_price %}
+                    {% set diff_percent = ((item.price_per_ton - item.previous_price) / item.previous_price * 100)|round(2) %}
+                    <span class="{% if diff_percent > 0 %}text-danger{% elif diff_percent < 0 %}text-success{% else %}text-muted{% endif %}">
+                        {{ diff_percent }}%
+                        {% if diff_percent > 0 %}
+                        <i class="fas fa-arrow-up"></i>
+                        {% elif diff_percent < 0 %}
+                        <i class="fas fa-arrow-down"></i>
+                        {% endif %}
+                    </span>
+                    {% else %}
+                    —
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="alert alert-info">
+    История изменения цен для данного товара отсутствует.
+</div>
+{% endif %}
+{% endblock %} 

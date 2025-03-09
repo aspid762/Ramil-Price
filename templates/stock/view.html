@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ stock.category }} {{ stock.name }} - Склад - Учет продаж металлопроката{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>{{ stock.category }} {{ stock.name }}</h1>
+    <div>
+        <a href="{{ url_for('stock.edit', id=stock.id) }}" class="btn btn-warning">
+            <i class="fas fa-edit"></i> Редактировать
+        </a>
+        <a href="{{ url_for('stock.index') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Назад к складу
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header bg-warning text-white">
+                <h5 class="mb-0">Информация о товаре</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Категория:</strong> {{ stock.category }}</p>
+                <p><strong>Наименование:</strong> {{ stock.name }}</p>
+                <p><strong>Характеристики:</strong> {{ stock.characteristics }}</p>
+                <p><strong>Всего на складе:</strong> {{ stock.quantity }}</p>
+                <p><strong>Доступно:</strong> {{ stock.available_quantity }}</p>
+                <p><strong>Зарезервировано:</strong> {{ stock.reserved_quantity }}</p>
+                <p><strong>Закупочная цена:</strong> {{ stock.purchase_price|round(2) }} руб.</p>
+                <p><strong>Дата поступления:</strong> {{ stock.received_at.strftime('%d.%m.%Y') }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">История движения</h5>
+            </div>
+            <div class="card-body">
+                {% if movements %}
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Дата</th>
+                                <th>Тип операции</th>
+                                <th>Количество</th>
+                                <th>Заказ</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for movement in movements %}
+                            <tr>
+                                <td>{{ movement.created_at.strftime('%d.%m.%Y %H:%M') }}</td>
+                                <td>{{ movement.operation_type }}</td>
+                                <td>{{ movement.quantity }}</td>
+                                <td>
+                                    {% if movement.order %}
+                                    <a href="{{ url_for('order.view', id=movement.order.id) }}">
+                                        Заказ #{{ movement.order.id }} ({{ movement.order.customer.name }})
+                                    </a>
+                                    {% else %}
+                                    -
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    История движения отсутствует.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

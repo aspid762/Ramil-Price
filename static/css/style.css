@@ -1,0 +1,532 @@
+/* Основные стили */
+:root {
+    --primary-color: #2c3e50;
+    --secondary-color: #3498db;
+    --success-color: #2ecc71;
+    --danger-color: #e74c3c;
+    --warning-color: #f39c12;
+    --info-color: #3498db;
+    --light-color: #ecf0f1;
+    --dark-color: #2c3e50;
+    --sidebar-width: 250px;
+    --sidebar-collapsed-width: 70px;
+    --header-height: 60px;
+    --footer-height: 50px;
+}
+
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #f5f7fa;
+    color: #333;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Боковое меню */
+.sidebar-container {
+    width: var(--sidebar-width);
+    flex-shrink: 0;
+    transition: width 0.3s ease;
+}
+
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: var(--sidebar-width);
+    background-color: var(--primary-color);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    transition: width 0.3s ease;
+    z-index: 1000;
+}
+
+.sidebar-header {
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-logo {
+    color: white;
+    text-decoration: none;
+    font-size: 1.5rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+}
+
+.sidebar-logo i {
+    margin-right: 0.5rem;
+}
+
+.sidebar-menu {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem 0;
+}
+
+.sidebar-menu .nav-link {
+    color: rgba(255, 255, 255, 0.7);
+    padding: 0.75rem 1rem;
+    display: flex;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.sidebar-menu .nav-link i {
+    margin-right: 0.75rem;
+    font-size: 1.1rem;
+    width: 1.5rem;
+    text-align: center;
+}
+
+.sidebar-menu .nav-link:hover,
+.sidebar-menu .nav-link.active {
+    color: white;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-menu .dropdown-menu {
+    background-color: #34495e;
+    border: none;
+    margin-top: 0;
+    border-radius: 0;
+    padding: 0;
+}
+
+.sidebar-menu .dropdown-item {
+    color: rgba(255, 255, 255, 0.7);
+    padding: 0.75rem 1rem 0.75rem 3.25rem;
+    transition: all 0.3s ease;
+}
+
+.sidebar-menu .dropdown-item:hover {
+    color: white;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-footer {
+    padding: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    text-align: center;
+}
+
+/* Основной контент */
+.main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.main-header {
+    height: var(--header-height);
+    background-color: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    display: flex;
+    align-items: center;
+    padding: 0 1.5rem;
+    position: sticky;
+    top: 0;
+    z-index: 900;
+}
+
+.page-title {
+    font-size: 1.5rem;
+    font-weight: 500;
+    margin: 0;
+    color: var(--primary-color);
+}
+
+.main-body {
+    flex: 1;
+    padding: 1.5rem;
+    overflow-y: auto;
+}
+
+.main-footer {
+    height: var(--footer-height);
+    background-color: white;
+    border-top: 1px solid #e9ecef;
+    display: flex;
+    align-items: center;
+    padding: 0 1.5rem;
+}
+
+/* Карточки */
+.card {
+    border: none;
+    border-radius: 0.5rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    margin-bottom: 1.5rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.card-header {
+    background-color: white;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+    padding: 1rem 1.25rem;
+    font-weight: 500;
+}
+
+.card-header.bg-primary {
+    background-color: var(--primary-color) !important;
+}
+
+.card-header.bg-success {
+    background-color: var(--success-color) !important;
+}
+
+.card-header.bg-info {
+    background-color: var(--info-color) !important;
+}
+
+.card-header.bg-warning {
+    background-color: var(--warning-color) !important;
+}
+
+.card-body {
+    padding: 1.25rem;
+}
+
+/* Таблицы */
+.table {
+    margin-bottom: 0;
+}
+
+.table th {
+    font-weight: 500;
+    background-color: #f8f9fa;
+    border-top: none;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(0, 123, 255, 0.05);
+}
+
+/* Кнопки */
+.btn {
+    border-radius: 0.25rem;
+    padding: 0.375rem 0.75rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-primary:hover {
+    background-color: #1a252f;
+    border-color: #1a252f;
+}
+
+.btn-success {
+    background-color: var(--success-color);
+    border-color: var(--success-color);
+}
+
+.btn-success:hover {
+    background-color: #27ae60;
+    border-color: #27ae60;
+}
+
+.btn-info {
+    background-color: var(--info-color);
+    border-color: var(--info-color);
+    color: white;
+}
+
+.btn-info:hover {
+    background-color: #2980b9;
+    border-color: #2980b9;
+    color: white;
+}
+
+.btn-warning {
+    background-color: var(--warning-color);
+    border-color: var(--warning-color);
+    color: white;
+}
+
+.btn-warning:hover {
+    background-color: #e67e22;
+    border-color: #e67e22;
+    color: white;
+}
+
+.btn-danger {
+    background-color: var(--danger-color);
+    border-color: var(--danger-color);
+}
+
+.btn-danger:hover {
+    background-color: #c0392b;
+    border-color: #c0392b;
+}
+
+.btn-action {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+/* Формы */
+.form-control {
+    border-radius: 0.25rem;
+    padding: 0.375rem 0.75rem;
+    border: 1px solid #ced4da;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: var(--secondary-color);
+    box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+}
+
+.form-select {
+    border-radius: 0.25rem;
+    padding: 0.375rem 0.75rem;
+    border: 1px solid #ced4da;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-select:focus {
+    border-color: var(--secondary-color);
+    box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+}
+
+/* Статусы заказов */
+.status-badge {
+    padding: 0.35em 0.65em;
+    font-size: 0.75em;
+    font-weight: 700;
+    border-radius: 0.25rem;
+    text-transform: uppercase;
+    display: inline-block;
+}
+
+.status-new {
+    background-color: #cfe2ff;
+    color: #084298;
+}
+
+.status-processing,
+.status-v-obrabotke {
+    background-color: #fff3cd;
+    color: #664d03;
+}
+
+.status-sent,
+.status-peredan-zakazchiku-na-soglasovanie {
+    background-color: #d1e7dd;
+    color: #0f5132;
+}
+
+.status-accepted,
+.status-prinyat-zakazchikom {
+    background-color: #d1e7dd;
+    color: #0f5132;
+}
+
+.status-paid,
+.status-oplacen-polnostyu {
+    background-color: #d1e7dd;
+    color: #0f5132;
+}
+
+.status-partially-paid,
+.status-oplacen-chastichno {
+    background-color: #fff3cd;
+    color: #664d03;
+}
+
+.status-shipped,
+.status-otgruzhen {
+    background-color: #f8d7da;
+    color: #842029;
+}
+
+/* Индикатор изменения цены */
+.price-change {
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+    font-weight: bold;
+    display: inline-block;
+}
+
+.price-increase {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.price-decrease {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .sidebar-container {
+        width: var(--sidebar-collapsed-width);
+    }
+    
+    .sidebar {
+        width: var(--sidebar-collapsed-width);
+    }
+    
+    .sidebar-logo span,
+    .sidebar-menu .nav-link span,
+    .sidebar-footer {
+        display: none;
+    }
+    
+    .sidebar-menu .nav-link i {
+        margin-right: 0;
+        font-size: 1.25rem;
+    }
+    
+    .main-content {
+        margin-left: var(--sidebar-collapsed-width);
+    }
+    
+    .sidebar-expanded .sidebar-container,
+    .sidebar-expanded .sidebar {
+        width: var(--sidebar-width);
+    }
+    
+    .sidebar-expanded .sidebar-logo span,
+    .sidebar-expanded .sidebar-menu .nav-link span,
+    .sidebar-expanded .sidebar-footer {
+        display: block;
+    }
+    
+    .sidebar-expanded .sidebar-menu .nav-link i {
+        margin-right: 0.75rem;
+    }
+}
+
+/* Дашборд */
+.dashboard-card {
+    border-radius: 0.5rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    height: 100%;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.dashboard-card-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.dashboard-card-title {
+    font-size: 1rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.dashboard-card-value {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0;
+}
+
+.dashboard-card-footer {
+    font-size: 0.875rem;
+    color: #6c757d;
+}
+
+.chart-container {
+    position: relative;
+    height: 300px;
+}
+
+.footer {
+    margin-top: auto;
+}
+
+/* Стили для таблиц */
+.table-responsive {
+    overflow-x: auto;
+}
+
+.table th {
+    background-color: #f8f9fa;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(0, 123, 255, 0.05);
+}
+
+/* Стили для форм */
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-control:focus {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Стили для кнопок действий в таблицах */
+.btn-action {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+/* Стили для бейджей статусов */
+.badge {
+    font-size: 0.875rem;
+    padding: 0.35em 0.65em;
+}
+
+/* Стили для поиска */
+.search-form {
+    margin-bottom: 1.5rem;
+}
+
+/* Стили для графиков */
+.chart-container {
+    position: relative;
+    height: 300px;
+    width: 100%;
+}
+
+/* Стили для печати */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+    
+    .container-fluid {
+        width: 100%;
+        padding: 0;
+    }
+    
+    .card {
+        border: none;
+        box-shadow: none;
+    }
+    
+    .card-header {
+        background-color: #fff;
+        border-bottom: 1px solid #000;
+    }
+} 

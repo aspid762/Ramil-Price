@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block title %}Создание заказа - Учет продаж металлопроката{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Создание заказа</h1>
+    <a href="{{ url_for('order.index') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Назад к списку заказов
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form method="post" action="{{ url_for('order.create') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            
+            <div class="mb-3">
+                <label for="customer_id" class="form-label">Заказчик</label>
+                <select name="customer_id" id="customer_id" class="form-select" required>
+                    <option value="">Выберите заказчика</option>
+                    {% for customer in customers %}
+                    <option value="{{ customer.id }}" {% if customer_id and customer_id|int == customer.id %}selected{% endif %}>
+                        {{ customer.name }} ({{ customer.phone }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="mb-3">
+                <label for="status" class="form-label">Статус</label>
+                <select name="status" id="status" class="form-select" required>
+                    {% for status in config.ORDER_STATUSES %}
+                    <option value="{{ status }}" {% if status == 'новый' %}selected{% endif %}>{{ status }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="mb-3">
+                <label for="expected_shipping" class="form-label">Ожидаемая дата отгрузки</label>
+                <input type="date" name="expected_shipping" id="expected_shipping" class="form-control" pattern="\d{4}-\d{2}-\d{2}">
+                <small class="form-text text-muted">Оставьте пустым, если дата неизвестна. Формат: ГГГГ-ММ-ДД</small>
+            </div>
+            
+            <div class="mb-3">
+                <label for="notes" class="form-label">Примечания</label>
+                <textarea name="notes" id="notes" class="form-control" rows="3"></textarea>
+            </div>
+            
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-info">Создать заказ</button>
+                <small class="form-text text-muted text-center">После создания заказа вы сможете добавить позиции</small>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %} 

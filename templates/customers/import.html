@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %}Импорт заказчиков - Учет продаж металлопроката{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">Импорт заказчиков из Excel</h1>
+    
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="card-title">Инструкция</h5>
+        </div>
+        <div class="card-body">
+            <p>Для импорта заказчиков подготовьте Excel-файл (.xlsx) со следующими столбцами:</p>
+            <ol>
+                <li>Наименование (обязательно)</li>
+                <li>Телефон</li>
+                <li>Адрес</li>
+                <li>Наценка (%)</li>
+                <li>Стоимость доставки (₽)</li>
+            </ol>
+            <p>Первая строка должна содержать заголовки столбцов.</p>
+            <p>Если заказчик с таким наименованием уже существует, его данные будут обновлены.</p>
+            
+            <div class="mt-3">
+                <a href="{{ url_for('customer.export') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-download"></i> Скачать текущий список заказчиков как шаблон
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title">Загрузка файла</h5>
+        </div>
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                
+                <div class="mb-3">
+                    <label for="file" class="form-label">Выберите Excel-файл</label>
+                    <input type="file" class="form-control" id="file" name="file" accept=".xlsx" required>
+                    <div class="form-text">Поддерживаются только файлы формата .xlsx</div>
+                </div>
+                
+                <div class="d-flex justify-content-between">
+                    <a href="{{ url_for('customer.index') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Назад
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-upload"></i> Загрузить и импортировать
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %} 
