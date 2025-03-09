@@ -3,6 +3,7 @@ import datetime
 import platform
 import os
 
+# TEST
 app = Flask(__name__)
 
 @app.route('/')
