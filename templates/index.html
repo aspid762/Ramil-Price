@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тестовое приложение Flask</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #333;
+        }
+        .endpoint {
+            background-color: #f5f5f5;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+        }
+        .endpoint h3 {
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Тестовое приложение Flask</h1>
+    <p>Это простое приложение для проверки работоспособности сервиса.</p>
+    
+    <div class="endpoint">
+        <h3>Эндпоинт: /health</h3>
+        <p>Проверка работоспособности сервиса.</p>
+        <a href="/health" target="_blank">Открыть /health</a>
+    </div>
+    
+    <div class="endpoint">
+        <h3>Эндпоинт: /info</h3>
+        <p>Информация о приложении и окружении.</p>
+        <a href="/info" target="_blank">Открыть /info</a>
+    </div>
+</body>
+</html> 
