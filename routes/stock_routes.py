@@ -89,11 +89,13 @@ def edit(id):
         characteristics = request.form.get('characteristics')
         quantity = float(request.form.get('quantity'))
         purchase_price = float(request.form.get('purchase_price'))
+        weight_per_meter = float(request.form.get('weight_per_meter', 0))
         
         # Обновляем данные
         stock.category = category
         stock.name = name
         stock.characteristics = characteristics
+        stock.weight_per_meter = weight_per_meter
         
         # Если количество изменилось, добавляем запись о движении товара
         if quantity != stock.quantity:
@@ -268,14 +270,15 @@ def import_stock():
 @stock_bp.route('/add', methods=['GET', 'POST'])
 def add():
     """Добавление товара на склад"""
-    from models import Dictionary
+    from models import Dictionary, Product
     
     if request.method == 'POST':
         category = request.form.get('category')
         name = request.form.get('name')
         characteristics = request.form.get('characteristics')
-        quantity = float(request.form.get('quantity'))
-        purchase_price = float(request.form.get('purchase_price'))
+        quantity = float(request.form.get('quantity'))  # Количество в метрах
+        purchase_price = float(request.form.get('purchase_price'))  # Цена за метр
+        weight_per_meter = float(request.form.get('weight_per_meter', 0))  # Вес 1 метра в кг
         
         # Создаем новую партию на складе
         stock = Stock(
@@ -284,6 +287,7 @@ def add():
             characteristics=characteristics,
             quantity=quantity,
             purchase_price=purchase_price,
+            weight_per_meter=weight_per_meter,
             received_at=datetime.utcnow()
         )
         
@@ -314,7 +318,10 @@ def add():
         from config import Config
         categories = Config.PRODUCT_CATEGORIES
     
-    return render_template('stock/add.html', categories=categories)
+    # Получаем товары из прайс-листа для автозаполнения
+    products = Product.query.order_by(Product.category, Product.name).all()
+    
+    return render_template('stock/add.html', categories=categories, products=products)
 
 @stock_bp.route('/movement/add', methods=['GET', 'POST'])
 def add_movement():

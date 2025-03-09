@@ -39,10 +39,10 @@
                 <th>Категория</th>
                 <th>Наименование</th>
                 <th>Характеристики</th>
-                <th>Доступно</th>
-                <th>Зарезервировано</th>
-                <th>Всего</th>
-                <th>Закупочная цена, руб.</th>
+                <th>Количество, м</th>
+                <th>Вес 1 м, кг</th>
+                <th>Общий вес, кг</th>
+                <th>Цена за м, руб.</th>
                 <th>Действия</th>
             </tr>
         </thead>
@@ -52,16 +52,16 @@
                 <td>{{ stock.category }}</td>
                 <td>{{ stock.name }}</td>
                 <td>{{ stock.characteristics }}</td>
-                <td>{{ stock.available_quantity }}</td>
-                <td>{{ stock.reserved_quantity }}</td>
-                <td>{{ stock.quantity }}</td>
+                <td>{{ stock.quantity|round(2) }}</td>
+                <td>{{ stock.weight_per_meter|round(3) }}</td>
+                <td>{{ (stock.quantity * stock.weight_per_meter)|round(2) }}</td>
                 <td>{{ stock.purchase_price|round(2) }}</td>
                 <td>
                     <div class="btn-group">
                         <a href="{{ url_for('stock.view', id=stock.id) }}" class="btn btn-sm btn-outline-primary btn-action" title="Просмотр">
                             <i class="fas fa-eye"></i>
                         </a>
-                        <a href="{{ url_for('stock.edit', id=stock.id) }}" class="btn btn-sm btn-outline-warning btn-action" title="Редактировать">
+                        <a href="{{ url_for('stock.edit', id=stock.id) }}" class="btn btn-sm btn-outline-success btn-action" title="Редактировать">
                             <i class="fas fa-edit"></i>
                         </a>
                         <form method="post" action="{{ url_for('stock.delete', id=stock.id) }}" class="d-inline" onsubmit="return confirmDelete(event)">

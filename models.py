@@ -107,15 +107,26 @@ class Stock(db.Model):
     category = db.Column(db.String(50), nullable=False)
     name = db.Column(db.String(100), nullable=False)
     characteristics = db.Column(db.String(200), nullable=False)
-    quantity = db.Column(db.Float, nullable=False, default=0)
-    reserved_quantity = db.Column(db.Float, nullable=False, default=0)
-    purchase_price = db.Column(db.Float, nullable=False)
+    quantity = db.Column(db.Float, nullable=False, default=0)  # Количество в метрах
+    reserved_quantity = db.Column(db.Float, nullable=False, default=0)  # Зарезервированное количество в метрах
+    purchase_price = db.Column(db.Float, nullable=False)  # Цена за метр
+    weight_per_meter = db.Column(db.Float, nullable=False, default=0)  # Вес 1 метра в кг
     received_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     
     @property
     def available_quantity(self):
         """Рассчитывает доступное количество товара"""
         return self.quantity - self.reserved_quantity
+    
+    @property
+    def total_weight(self):
+        """Рассчитывает общий вес товара в кг"""
+        return self.quantity * self.weight_per_meter
+    
+    @property
+    def total_cost(self):
+        """Рассчитывает общую стоимость товара"""
+        return self.quantity * self.purchase_price
     
     def __repr__(self):
         return f'<Stock {self.category} {self.name}>'

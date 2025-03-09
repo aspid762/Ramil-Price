@@ -10,7 +10,41 @@
     </a>
 </div>
 
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="card-title">Выбор товара из прайс-листа</h5>
+    </div>
+    <div class="card-body">
+        <div class="mb-3">
+            <label for="product_search" class="form-label">Поиск товара:</label>
+            <input type="text" id="product_search" class="form-control" placeholder="Введите название, категорию или характеристики (минимум 3 символа)" autofocus>
+            <small class="form-text text-muted">Можно использовать несколько критериев через пробел, например: "проф 20"</small>
+        </div>
+        
+        <div class="mb-3">
+            <label for="product_id" class="form-label">Товар из прайс-листа:</label>
+            <select id="product_id" class="form-select">
+                <option value="">Выберите товар из прайс-листа</option>
+                {% for product in products %}
+                <option value="{{ product.id }}" 
+                        data-category="{{ product.category }}" 
+                        data-name="{{ product.name }}" 
+                        data-characteristics="{{ product.characteristics }}"
+                        data-weight="{{ product.weight_per_meter }}"
+                        data-price="{{ product.price_per_meter|round(2) }}">
+                    {{ product.category }} {{ product.name }} ({{ product.characteristics }}) - {{ product.price_per_meter|round(2) }} ₽/м
+                </option>
+                {% endfor %}
+            </select>
+            <small class="form-text text-muted">При выборе товара из прайс-листа, данные будут заполнены автоматически</small>
+        </div>
+    </div>
+</div>
+
 <div class="card">
+    <div class="card-header">
+        <h5 class="card-title">Данные о поступлении</h5>
+    </div>
     <div class="card-body">
         <form method="post" action="{{ url_for('stock.add') }}">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -36,13 +70,29 @@
             </div>
             
             <div class="mb-3">
-                <label for="quantity" class="form-label">Количество:</label>
+                <label for="weight_per_meter" class="form-label">Вес 1 метра, кг:</label>
+                <input type="number" name="weight_per_meter" id="weight_per_meter" class="form-control" step="0.001" min="0.001" required>
+            </div>
+            
+            <div class="mb-3">
+                <label for="quantity" class="form-label">Количество, метры:</label>
                 <input type="number" name="quantity" id="quantity" class="form-control" step="0.01" min="0.01" required>
             </div>
             
             <div class="mb-3">
-                <label for="purchase_price" class="form-label">Закупочная цена:</label>
+                <label for="purchase_price" class="form-label">Закупочная цена за метр, руб.:</label>
                 <input type="number" name="purchase_price" id="purchase_price" class="form-control" step="0.01" min="0.01" required>
+            </div>
+            
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="total_weight" class="form-label">Общий вес, кг:</label>
+                    <input type="text" id="total_weight" class="form-control" readonly>
+                </div>
+                <div class="col-md-6">
+                    <label for="total_cost" class="form-label">Общая стоимость, руб.:</label>
+                    <input type="text" id="total_cost" class="form-control" readonly>
+                </div>
             </div>
             
             <div class="d-grid gap-2">
@@ -51,4 +101,73 @@
         </form>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Инициализируем интерактивный поиск
+        initRealTimeSearch('product_search', 'product_id', 3);
+        
+        // Получаем элементы формы
+        const productSelect = document.getElementById('product_id');
+        const categorySelect = document.getElementById('category');
+        const nameInput = document.getElementById('name');
+        const characteristicsInput = document.getElementById('characteristics');
+        const weightInput = document.getElementById('weight_per_meter');
+        const quantityInput = document.getElementById('quantity');
+        const priceInput = document.getElementById('purchase_price');
+        const totalWeightInput = document.getElementById('total_weight');
+        const totalCostInput = document.getElementById('total_cost');
+        
+        // Функция для расчета общего веса и стоимости
+        function calculateTotals() {
+            const weight = parseFloat(weightInput.value) || 0;
+            const quantity = parseFloat(quantityInput.value) || 0;
+            const price = parseFloat(priceInput.value) || 0;
+            
+            const totalWeight = weight * quantity;
+            const totalCost = price * quantity;
+            
+            totalWeightInput.value = totalWeight.toFixed(2) + ' кг';
+            totalCostInput.value = totalCost.toFixed(2) + ' ₽';
+        }
+        
+        // При выборе товара из прайс-листа заполняем данные
+        productSelect.addEventListener('change', function() {
+            const selectedOption = productSelect.options[productSelect.selectedIndex];
+            
+            if (selectedOption.value) {
+                // Заполняем данные из выбранного товара
+                const category = selectedOption.getAttribute('data-category');
+                const name = selectedOption.getAttribute('data-name');
+                const characteristics = selectedOption.getAttribute('data-characteristics');
+                const weight = selectedOption.getAttribute('data-weight');
+                const price = selectedOption.getAttribute('data-price');
+                
+                // Находим и выбираем категорию
+                for (let i = 0; i < categorySelect.options.length; i++) {
+                    if (categorySelect.options[i].value === category) {
+                        categorySelect.selectedIndex = i;
+                        break;
+                    }
+                }
+                
+                // Заполняем остальные поля
+                nameInput.value = name;
+                characteristicsInput.value = characteristics;
+                weightInput.value = weight;
+                priceInput.value = price;
+                
+                // Рассчитываем общий вес и стоимость
+                calculateTotals();
+            }
+        });
+        
+        // При изменении количества, веса или цены пересчитываем общий вес и стоимость
+        quantityInput.addEventListener('input', calculateTotals);
+        weightInput.addEventListener('input', calculateTotals);
+        priceInput.addEventListener('input', calculateTotals);
+    });
+</script>
 {% endblock %} 

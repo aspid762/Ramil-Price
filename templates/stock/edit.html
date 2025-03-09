@@ -47,6 +47,11 @@
                 <small class="form-text text-muted">Текущая цена: {{ stock.purchase_price|round(2) }} руб.</small>
             </div>
             
+            <div class="mb-3">
+                <label for="weight_per_meter" class="form-label">Вес 1 метра, кг:</label>
+                <input type="number" name="weight_per_meter" id="weight_per_meter" class="form-control" step="0.001" min="0.001" value="{{ stock.weight_per_meter }}" required>
+            </div>
+            
             <div class="d-grid gap-2">
                 <button type="submit" class="btn btn-warning">Сохранить изменения</button>
             </div>
