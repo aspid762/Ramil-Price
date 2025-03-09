@@ -529,4 +529,79 @@ body {
         background-color: #fff;
         border-bottom: 1px solid #000;
     }
+}
+
+/* Стили для навигационной панели */
+.navbar-brand {
+    font-size: 1.25rem;
+    transition: color 0.2s;
+}
+
+.navbar-brand:hover {
+    color: #fff !important;
+}
+
+/* Адаптация для мобильных устройств */
+@media (max-width: 768px) {
+    .navbar-brand {
+        font-size: 1.1rem;
+    }
+    
+    .navbar-brand i {
+        font-size: 1.2rem;
+    }
+}
+
+/* Стили для выпадающего списка с результатами поиска */
+.form-select option {
+    padding: 8px;
+}
+
+.form-select option:hover {
+    background-color: #f8f9fa;
+}
+
+/* Стили для поля поиска */
+#product_search:focus {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Стили для интерактивного поиска */
+.search-container {
+    position: relative;
+}
+
+.search-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background-color: white;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.search-results-item {
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.search-results-item:hover {
+    background-color: #f8f9fa;
+}
+
+.search-results-item.active {
+    background-color: #e9ecef;
+}
+
+.search-highlight {
+    background-color: #fff3cd;
+    padding: 0.1rem 0.2rem;
+    border-radius: 0.2rem;
 } 

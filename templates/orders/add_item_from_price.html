@@ -3,51 +3,166 @@
 {% block title %}Добавление позиции из прайс-листа - Заказ #{{ order.id }} - Учет продаж металлопроката{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1>Добавление позиции из прайс-листа</h1>
-    <a href="{{ url_for('order.edit', id=order.id) }}" class="btn btn-secondary">
-        <i class="fas fa-arrow-left"></i> Назад к заказу
-    </a>
-</div>
-
-<div class="card">
-    <div class="card-body">
-        <form method="post" action="{{ url_for('order.add_item_from_price', id=order.id) }}">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            
-            <div class="mb-3">
-                <label for="product_id" class="form-label">Товар из прайс-листа</label>
-                <select name="product_id" id="product_id" class="form-select" required>
-                    <option value="">Выберите товар</option>
-                    {% for product in products %}
-                    <option value="{{ product.id }}">
-                        {{ product.category }} {{ product.name }} ({{ product.characteristics }}) - {{ product.price_per_meter|round(2) }} руб./м
-                    </option>
-                    {% endfor %}
-                </select>
-            </div>
-            
-            <div class="mb-3">
-                <label for="quantity" class="form-label">Количество</label>
-                <input type="number" name="quantity" id="quantity" class="form-control" step="0.01" min="0.01" required>
-            </div>
-            
-            <div class="mb-3">
-                <label for="custom_price" class="form-label">Ручная цена за единицу (руб.)</label>
-                <input type="number" name="custom_price" id="custom_price" class="form-control" step="0.01" min="0">
-                <small class="form-text text-muted">Оставьте пустым, чтобы использовать цену из прайс-листа</small>
-            </div>
-            
-            <div class="mb-3">
-                <label for="margin" class="form-label">Наценка, %</label>
-                <input type="number" name="margin" id="margin" class="form-control" step="0.1" min="0" value="{{ order.customer.margin }}" required>
-                <small class="form-text text-muted">Стандартная наценка для заказчика: {{ order.customer.margin }}%</small>
-            </div>
-            
-            <div class="d-grid gap-2">
-                <button type="submit" class="btn btn-info">Добавить позицию</button>
-            </div>
-        </form>
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Добавление позиции из прайс-листа</h1>
+        <a href="{{ url_for('order.edit', id=order.id) }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Назад к заказу
+        </a>
+    </div>
+    
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="post" action="{{ url_for('order.add_item_from_price', id=order.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                
+                <div class="mb-3">
+                    <label for="product_search" class="form-label">Поиск товара:</label>
+                    <input type="text" id="product_search" class="form-control" placeholder="Введите название, категорию или характеристики (минимум 3 символа)">
+                    <small class="form-text text-muted">Можно использовать несколько критериев через пробел, например: "проф 20"</small>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="product_id" class="form-label">Товар:</label>
+                    <select name="product_id" id="product_id" class="form-select" required>
+                        <option value="">Выберите товар</option>
+                        {% for product in products %}
+                        <option value="{{ product.id }}" data-category="{{ product.category }}" data-name="{{ product.name }}" data-characteristics="{{ product.characteristics }}" data-price="{{ product.price_per_meter|round(2) }}">
+                            {{ product.category }} {{ product.name }} ({{ product.characteristics }}) - {{ product.price_per_meter|round(2) }} ₽/м
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="quantity" class="form-label">Количество:</label>
+                    <input type="number" name="quantity" id="quantity" class="form-control" step="0.01" min="0.01" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="margin" class="form-label">Наценка (%):</label>
+                    <input type="number" name="margin" id="margin" class="form-control" step="0.01" min="0" value="{{ order.customer.margin|default(0) }}">
+                </div>
+                
+                <div class="mb-3">
+                    <label for="custom_price" class="form-label">Ручная цена (₽/м, опционально):</label>
+                    <input type="number" name="custom_price" id="custom_price" class="form-control" step="0.01" min="0">
+                    <small class="form-text text-muted">Если указана, будет использоваться вместо цены из прайс-листа</small>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="selling_price_preview" class="form-label">Итоговая цена продажи (₽/м):</label>
+                    <input type="text" id="selling_price_preview" class="form-control" readonly>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="total_price_preview" class="form-label">Итоговая стоимость:</label>
+                    <input type="text" id="total_price_preview" class="form-control" readonly>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Добавить позицию</button>
+            </form>
+        </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const productSearch = document.getElementById('product_search');
+        const productSelect = document.getElementById('product_id');
+        const quantityInput = document.getElementById('quantity');
+        const marginInput = document.getElementById('margin');
+        const customPriceInput = document.getElementById('custom_price');
+        const sellingPricePreview = document.getElementById('selling_price_preview');
+        const totalPricePreview = document.getElementById('total_price_preview');
+        
+        // Сохраняем все опции для последующей фильтрации
+        const allOptions = Array.from(productSelect.options).slice(1); // Пропускаем первую опцию "Выберите товар"
+        
+        // Функция для фильтрации товаров
+        function filterProducts() {
+            const searchText = productSearch.value.toLowerCase();
+            
+            // Если меньше 3 символов, показываем все товары
+            if (searchText.length < 3) {
+                // Очищаем текущие опции
+                productSelect.innerHTML = '<option value="">Выберите товар</option>';
+                
+                // Добавляем все опции
+                allOptions.forEach(option => {
+                    productSelect.appendChild(option.cloneNode(true));
+                });
+                
+                return;
+            }
+            
+            // Разбиваем поисковый запрос на отдельные критерии
+            const searchCriteria = searchText.split(' ').filter(criteria => criteria.length > 0);
+            
+            // Фильтруем товары по критериям
+            const filteredOptions = allOptions.filter(option => {
+                const category = option.getAttribute('data-category').toLowerCase();
+                const name = option.getAttribute('data-name').toLowerCase();
+                const characteristics = option.getAttribute('data-characteristics').toLowerCase();
+                const fullText = `${category} ${name} ${characteristics}`.toLowerCase();
+                
+                // Проверяем, что все критерии присутствуют в тексте
+                return searchCriteria.every(criteria => fullText.includes(criteria));
+            });
+            
+            // Очищаем текущие опции
+            productSelect.innerHTML = '<option value="">Выберите товар</option>';
+            
+            // Добавляем отфильтрованные опции
+            filteredOptions.forEach(option => {
+                productSelect.appendChild(option.cloneNode(true));
+            });
+            
+            // Если найден только один товар, выбираем его автоматически
+            if (filteredOptions.length === 1) {
+                productSelect.selectedIndex = 1;
+                updatePricePreview();
+            }
+        }
+        
+        // Функция для обновления предварительного расчета цены
+        function updatePricePreview() {
+            const selectedOption = productSelect.options[productSelect.selectedIndex];
+            
+            if (selectedOption.value) {
+                const basePrice = parseFloat(selectedOption.getAttribute('data-price'));
+                const quantity = parseFloat(quantityInput.value) || 0;
+                const margin = parseFloat(marginInput.value) || 0;
+                const customPrice = parseFloat(customPriceInput.value) || 0;
+                
+                // Рассчитываем цену продажи
+                let sellingPrice;
+                if (customPrice > 0) {
+                    sellingPrice = customPrice * (1 + margin / 100);
+                } else {
+                    sellingPrice = basePrice * (1 + margin / 100);
+                }
+                
+                // Рассчитываем общую стоимость
+                const totalPrice = sellingPrice * quantity;
+                
+                // Обновляем поля предварительного просмотра
+                sellingPricePreview.value = sellingPrice.toFixed(2) + ' ₽';
+                totalPricePreview.value = totalPrice.toFixed(2) + ' ₽';
+            } else {
+                sellingPricePreview.value = '';
+                totalPricePreview.value = '';
+            }
+        }
+        
+        // Добавляем обработчики событий
+        productSearch.addEventListener('input', filterProducts);
+        productSelect.addEventListener('change', updatePricePreview);
+        quantityInput.addEventListener('input', updatePricePreview);
+        marginInput.addEventListener('input', updatePricePreview);
+        customPriceInput.addEventListener('input', updatePricePreview);
+    });
+</script>
 {% endblock %} 

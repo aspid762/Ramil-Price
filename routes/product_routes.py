@@ -8,22 +8,42 @@ product_bp = Blueprint('product', __name__, url_prefix='/products')
 
 @product_bp.route('/')
 def index():
-    """Отображение прайс-листа"""
+    """Отображение списка товаров"""
     search = request.args.get('search', '')
+    
+    # Базовый запрос
+    query = Product.query
     
     # Фильтрация по поисковому запросу
     if search:
-        products = Product.query.filter(
-            or_(
-                Product.category.ilike(f'%{search}%'),
-                Product.name.ilike(f'%{search}%'),
-                Product.characteristics.ilike(f'%{search}%')
+        # Разбиваем поисковый запрос на отдельные слова
+        search_terms = search.split()
+        
+        # Создаем условия для поиска по каждому слову
+        conditions = []
+        for term in search_terms:
+            term_like = f'%{term}%'
+            condition = or_(
+                Product.category.ilike(term_like),
+                Product.name.ilike(term_like),
+                Product.characteristics.ilike(term_like)
             )
-        ).order_by(Product.category, Product.name).all()
-    else:
-        products = Product.query.order_by(Product.category, Product.name).all()
+            conditions.append(condition)
+        
+        # Применяем все условия (AND между разными словами)
+        for condition in conditions:
+            query = query.filter(condition)
     
-    return render_template('products/index.html', products=products, search=search)
+    # Получаем отфильтрованные товары
+    products = query.order_by(Product.category, Product.name).all()
+    
+    # Получаем все товары для интерактивного поиска
+    all_products = Product.query.order_by(Product.category, Product.name).all()
+    
+    return render_template('products/index.html', 
+                          products=products, 
+                          all_products=all_products,
+                          search=search)
 
 @product_bp.route('/create', methods=['GET', 'POST'])
 def create():

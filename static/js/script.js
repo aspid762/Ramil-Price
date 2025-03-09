@@ -197,6 +197,113 @@ function copyToClipboard(text, button) {
     document.body.removeChild(textarea);
 }
 
+/**
+ * Инициализирует интерактивный поиск в реальном времени
+ * @param {string} searchInputId - ID поля ввода для поиска
+ * @param {string} selectId - ID выпадающего списка
+ * @param {string} tableId - ID таблицы для фильтрации
+ * @param {Array} searchAttributes - Массив атрибутов для поиска
+ * @param {number} minChars - Минимальное количество символов для начала поиска
+ */
+function initRealTimeSearch(searchInputId, tableId, minChars = 3) {
+    const searchInput = document.getElementById(searchInputId);
+    const table = document.getElementById(tableId);
+    
+    if (!searchInput || !table) return;
+    
+    // Добавляем индикатор количества найденных элементов
+    const labelElement = document.querySelector(`label[for="${searchInputId}"]`);
+    if (labelElement) {
+        const countBadge = document.createElement('span');
+        countBadge.id = `${searchInputId}_count`;
+        countBadge.className = 'badge bg-info ms-2';
+        countBadge.textContent = 'Все элементы';
+        labelElement.appendChild(countBadge);
+    }
+    
+    // Получаем все строки таблицы
+    const rows = Array.from(table.querySelectorAll('tbody tr'));
+    
+    // Функция для фильтрации строк таблицы
+    function filterRows() {
+        const searchText = searchInput.value.toLowerCase();
+        const countBadge = document.getElementById(`${searchInputId}_count`);
+        
+        // Если меньше minChars символов, показываем все строки
+        if (searchText.length < minChars) {
+            rows.forEach(row => {
+                row.style.display = '';
+            });
+            
+            if (countBadge) {
+                countBadge.textContent = 'Все элементы';
+                countBadge.className = 'badge bg-info ms-2';
+            }
+            
+            return;
+        }
+        
+        // Разбиваем поисковый запрос на отдельные критерии
+        const searchCriteria = searchText.split(' ').filter(criteria => criteria.length > 0);
+        
+        // Счетчик видимых строк
+        let visibleCount = 0;
+        
+        // Фильтруем строки по критериям
+        rows.forEach(row => {
+            const cells = Array.from(row.querySelectorAll('td'));
+            const rowText = cells.map(cell => cell.textContent.toLowerCase()).join(' ');
+            
+            // Проверяем, что все критерии присутствуют в тексте строки
+            const isVisible = searchCriteria.every(criteria => rowText.includes(criteria));
+            
+            // Показываем или скрываем строку
+            row.style.display = isVisible ? '' : 'none';
+            
+            // Увеличиваем счетчик видимых строк
+            if (isVisible) visibleCount++;
+            
+            // Подсвечиваем найденные критерии
+            if (isVisible) {
+                cells.forEach(cell => {
+                    const originalText = cell.textContent;
+                    let highlightedText = originalText;
+                    
+                    searchCriteria.forEach(criteria => {
+                        const regex = new RegExp(criteria, 'gi');
+                        highlightedText = highlightedText.replace(regex, match => 
+                            `<span class="search-highlight">${match}</span>`
+                        );
+                    });
+                    
+                    if (highlightedText !== originalText) {
+                        cell.innerHTML = highlightedText;
+                    }
+                });
+            }
+        });
+        
+        // Обновляем индикатор количества найденных элементов
+        if (countBadge) {
+            countBadge.textContent = `Найдено: ${visibleCount}`;
+            
+            if (visibleCount === 0) {
+                countBadge.className = 'badge bg-danger ms-2';
+            } else if (visibleCount < 5) {
+                countBadge.className = 'badge bg-warning ms-2';
+            } else {
+                countBadge.className = 'badge bg-success ms-2';
+            }
+        }
+    }
+    
+    // Добавляем обработчик события
+    searchInput.addEventListener('input', filterRows);
+    
+    // Инициализируем фильтрацию при загрузке страницы
+    filterRows();
+}
+
 // Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', function() {
     initTooltips();

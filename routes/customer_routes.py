@@ -10,19 +10,39 @@ def index():
     """Отображение списка заказчиков"""
     search = request.args.get('search', '')
     
+    # Базовый запрос
+    query = Customer.query
+    
     # Фильтрация по поисковому запросу
     if search:
-        customers = Customer.query.filter(
-            or_(
-                Customer.name.ilike(f'%{search}%'),
-                Customer.phone.ilike(f'%{search}%'),
-                Customer.address.ilike(f'%{search}%')
+        # Разбиваем поисковый запрос на отдельные слова
+        search_terms = search.split()
+        
+        # Создаем условия для поиска по каждому слову
+        conditions = []
+        for term in search_terms:
+            term_like = f'%{term}%'
+            condition = or_(
+                Customer.name.ilike(term_like),
+                Customer.phone.ilike(term_like),
+                Customer.address.ilike(term_like)
             )
-        ).order_by(Customer.name).all()
-    else:
-        customers = Customer.query.order_by(Customer.name).all()
+            conditions.append(condition)
+        
+        # Применяем все условия (AND между разными словами)
+        for condition in conditions:
+            query = query.filter(condition)
     
-    return render_template('customers/index.html', customers=customers, search=search)
+    # Получаем отфильтрованных заказчиков
+    customers = query.order_by(Customer.name).all()
+    
+    # Получаем всех заказчиков для интерактивного поиска
+    all_customers = Customer.query.order_by(Customer.name).all()
+    
+    return render_template('customers/index.html', 
+                          customers=customers, 
+                          all_customers=all_customers,
+                          search=search)
 
 @customer_bp.route('/create', methods=['GET', 'POST'])
 def create():

@@ -513,7 +513,7 @@ def add_item_from_stock(id):
 
 @order_bp.route('/add_item_from_price/<int:id>', methods=['GET', 'POST'])
 def add_item_from_price(id):
-    """Добавление позиции в заказ из прайс-листа"""
+    """Добавление позиции из прайс-листа в заказ"""
     order = Order.query.get_or_404(id)
     
     # Если заказ уже отгружен, запрещаем добавление позиций

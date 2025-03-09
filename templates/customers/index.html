@@ -20,20 +20,31 @@
 
 <div class="card mb-4">
     <div class="card-body">
-        <form method="get" action="{{ url_for('customer.index') }}" class="row g-3">
-            <div class="col-md-10">
-                <input type="text" name="search" class="form-control" placeholder="Поиск по названию, телефону или адресу..." value="{{ search }}">
+        <div class="row g-3">
+            <div class="col-md-12">
+                <label for="customer_search" class="form-label">Поиск заказчика:</label>
+                <input type="text" id="customer_search" class="form-control" placeholder="Введите название, телефон или адрес (минимум 3 символа)" value="{{ search }}" autofocus>
+                <small class="form-text text-muted">Можно использовать несколько критериев через пробел, например: "ООО Москва"</small>
             </div>
-            <div class="col-md-2">
-                <button type="submit" class="btn btn-primary w-100">Поиск</button>
-            </div>
-        </form>
+        </div>
     </div>
+</div>
+
+<!-- Добавляем скрытый выпадающий список для поиска -->
+<div class="d-none">
+    <select id="customers_list">
+        <option value="">Выберите заказчика</option>
+        {% for customer in all_customers %}
+        <option value="{{ customer.id }}" data-name="{{ customer.name }}" data-phone="{{ customer.phone }}" data-address="{{ customer.address }}">
+            {{ customer.name }}
+        </option>
+        {% endfor %}
+    </select>
 </div>
 
 {% if customers %}
 <div class="table-responsive">
-    <table class="table table-striped table-hover">
+    <table class="table table-striped table-hover" id="customers_table">
         <thead>
             <tr>
                 <th>Наименование</th>
@@ -109,4 +120,34 @@
     {% endif %}
 </div>
 {% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Инициализируем интерактивный поиск в реальном времени
+        initRealTimeSearch('customer_search', 'customers_table', 3);
+        
+        // Добавляем обработчик для сохранения поискового запроса в URL
+        const searchInput = document.getElementById('customer_search');
+        let searchTimeout;
+        
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(function() {
+                // Обновляем URL с параметром поиска
+                const searchValue = searchInput.value.trim();
+                if (searchValue.length >= 3 || searchValue.length === 0) {
+                    const url = new URL(window.location);
+                    if (searchValue) {
+                        url.searchParams.set('search', searchValue);
+                    } else {
+                        url.searchParams.delete('search');
+                    }
+                    history.replaceState({}, '', url);
+                }
+            }, 500); // Задержка 500 мс перед обновлением URL
+        });
+    });
+</script>
 {% endblock %} 
